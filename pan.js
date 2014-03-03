@@ -31,7 +31,7 @@ PanGestureRecognizer.prototype = {
         var allTouches = event.allTouches();
         if (allTouches.length >= PanGestureRecognizer.MinimumNumberOfTouches &&
             allTouches.length <= PanGestureRecognizer.MaximumNumberOfTouches) {
-            if (MobileSafari) {
+            if (GestureRecognizer.SupportsTouches) {
                 if (event.target != this.target) {
                     this.touchend(event);
                     return;
@@ -57,7 +57,7 @@ PanGestureRecognizer.prototype = {
     
     touchend: function(event)
     {
-        if (event.target == this.target || !MobileSafari) {
+        if (event.target == this.target || !GestureRecognizer.SupportsTouches) {
             GestureRecognizer.prototype.touchend.call(this, event);
             if (this.beganRecognizer) {
                 this.fire(this.target, GestureRecognizer.States.Ended, this);

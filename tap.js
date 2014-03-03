@@ -32,7 +32,7 @@ TapGestureRecognizer.prototype = {
     {
         // move events fire even if there's no move on desktop browsers
         // the idea of a "tap" with mouse should ignore movement anyway...
-        if (event.target == this.target && !MobileSafari) {
+        if (event.target == this.target && !GestureRecognizer.SupportsTouches) {
             event.preventDefault();
             this.removeObservers();
             this.fire(this.target, GestureRecognizer.States.Failed, this);

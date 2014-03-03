@@ -1,10 +1,17 @@
 
 module.exports = GestureRecognizer;
 
+var DOM = require("dom-events");
+
 function GestureRecognizer()
 {
+    DOM.EventTarget.call(this);
+
     this._target = null;
+    this.state = GestureRecognizer.States.Possible;
 }
+
+GestureRecognizer.SupportsTouches = "createTouch" in document;
 
 GestureRecognizer.States = {
     Possible   : 'possible',
@@ -31,6 +38,7 @@ GestureRecognizer.addGestureRecognizer = function(target, gestureRecognizer) {
 
 GestureRecognizer.prototype = {
     constructor: GestureRecognizer,
+    __proto__: DOM.EventTarget.prototype,
 
     get target()
     {
@@ -63,10 +71,8 @@ GestureRecognizer.prototype = {
         this.reset();
         this.state = GestureRecognizer.States.Possible;
 
-        this.touchmoveHandler = this.touchmove.bind(this);
-        this.touchendHandler = this.touchend.bind(this);
+        this._target.addEventListener(GestureRecognizer.Events.TouchStart, this.touchstart, this);
 
-        this.observe(this._target, GestureRecognizer.Events.TouchStart, this.touchstart.bind(this));
         this.observe(this._target, GestureRecognizer.States.Possible, this.possible.bind(this));
         this.observe(this._target, GestureRecognizer.States.Began, this.began.bind(this));
         this.observe(this._target, GestureRecognizer.States.Ended, this.ended.bind(this));
@@ -181,48 +187,49 @@ GestureRecognizer.prototype = {
     
     addObservers: function()
     {
-        this.observe(document, GestureRecognizer.Events.TouchMove, this.touchmoveHandler);
-        this.observe(document, GestureRecognizer.Events.End, this.touchendHandler);
+        document.addEventListener(GestureRecognizer.Events.TouchMove, this.touchmove, this);
+        document.addEventListener(GestureRecognizer.Events.TouchEnd, this.touchend, this);
     },
     
     removeObservers: function()
     {
-        this.stopObserving(document, GestureRecognizer.Events.TouchMove, this.touchmoveHandler);
-        this.stopObserving(document, GestureRecognizer.Events.End, this.touchendHandler);
+        document.removeEventListener(GestureRecognizer.Events.TouchMove, this.touchmove, this);
+        document.removeEventListener(GestureRecognizer.Events.TouchEnd, this.touchend, this);
+
         this.stopObserving(document, GestureRecognizer.Events.GestureChange, this.gesturechangeHandler);
         this.stopObserving(document, GestureRecognizer.Events.GestureEnd, this.gestureendHandler);
     },
     
     fire: function(target, eventName, obj)
     {
-        if (Framework.Prototype)
-            Event.fire(target, eventName, obj);
-        else if (Framework.jQuery)
-            $(target).trigger(eventName, obj);
+        // if (Framework.Prototype)
+        //     Event.fire(target, eventName, obj);
+        // else if (Framework.jQuery)
+        //     $(target).trigger(eventName, obj);
     },
     
     observe: function(target, eventName, handler)
     {
-        if (Framework.Prototype)
-            target.observe(eventName, handler);
-        else if (Framework.jQuery)
-            $(target).bind(eventName, handler);
+        // if (Framework.Prototype)
+        //     target.observe(eventName, handler);
+        // else if (Framework.jQuery)
+        //     $(target).bind(eventName, handler);
     },
     
     stopObserving: function(target, eventName, handler)
     {
-        if (Framework.Prototype)
-            target.stopObserving(eventName, handler);
-        else if (Framework.jQuery)
-            $(target).unbind(eventName, handler);
+        // if (Framework.Prototype)
+        //     target.stopObserving(eventName, handler);
+        // else if (Framework.jQuery)
+        //     $(target).unbind(eventName, handler);
     },
     
     getEventPoint: function(event)
     {
-        if (MobileSafari)
+        if (GestureRecognizer.SupportsTouches)
             return { x: event.targetTouches[0].pageX, y: event.targetTouches[0].pageY };
-        if (Framework.Prototype) return Event.pointer(event);
-        if (Framework.jQuery) return { x: event.pageX, y: event.pageY };
+        // if (Framework.Prototype) return Event.pointer(event);
+        // if (Framework.jQuery) return { x: event.pageX, y: event.pageY };
     },
 
     gesturestart: function(event)

@@ -31,7 +31,7 @@ LongPressGestureRecognizer.prototype = {
     touchmove: function(event)
     {
         // FIXME: allow some tolerance here.
-        if (event.target == this.target && MobileSafari) {
+        if (event.target == this.target && GestureRecognizer.SupportsTouches) {
             event.preventDefault();
             this.fire(this.target, GestureRecognizer.States.Failed, this);
         }
