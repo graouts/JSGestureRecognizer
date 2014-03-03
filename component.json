@@ -1,16 +1,23 @@
 {
-  "name": "JSGestureRecognizer",
-  "repo": "graouts/JSGestureRecognizer",
-  "description": "JavaScript implementation of UIGestureRecognizer",
-  "version": "0.0.1",
-  "keywords": [],
-  "dependencies": {
-    "graouts/emitter": "*"
-  },
-  "development": {},
-  "license": "MIT",
-  "main": "index.js",
-  "scripts": [
-    "index.js"
-  ]
+    "name": "gesture-recognizer",
+    "repo": "graouts/JSGestureRecognizer",
+    "description": "JavaScript implementation of UIGestureRecognizer",
+    "version": "0.0.1",
+    "keywords": [],
+    "dependencies": {
+        "graouts/emitter": "*"
+    },
+    "development": {},
+    "license": "MIT",
+    "main": "gesture-recognizer.js",
+    "scripts": [
+      "gesture-recognizer.js",
+      "view.js",
+      "long-press.js",
+      "pan.js",
+      "pinch.js",
+      "rotation.js",
+      "swipe.js",
+      "tap.js"
+    ]
 }

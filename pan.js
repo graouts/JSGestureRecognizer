@@ -1,5 +1,7 @@
 
-var GestureRecognizer = require("./GestureRecognizer");
+module.exports = PanGestureRecognizer;
+
+var GestureRecognizer = require("./gesture-recognizer");
 
 function PanGestureRecognizer()
 {

@@ -1,5 +1,7 @@
 
-var GestureRecognizer = require("./GestureRecognizer");
+module.exports = RotationGestureRecognizer;
+
+var GestureRecognizer = require("./gesture-recognizer");
 
 function RotationGestureRecognizer()
 {

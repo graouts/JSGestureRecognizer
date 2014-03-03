@@ -1,5 +1,7 @@
 
-var GestureRecognizer = require("./GestureRecognizer");
+module.exports = GestureRecognizer;
+
+var GestureRecognizer = require("./gesture-recognizer");
 
 function SwipeGestureRecognizer()
 {

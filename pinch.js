@@ -1,5 +1,7 @@
 
-var GestureRecognizer = require("./GestureRecognizer");
+module.exports = PinchGestureRecognizer;
+
+var GestureRecognizer = require("./gesture-recognizer");
 
 function PinchGestureRecognizer()
 {

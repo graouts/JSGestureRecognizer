@@ -1,4 +1,6 @@
 
+module.exports = GestureRecognizer;
+
 function GestureRecognizer()
 {
     this._target = null;
@@ -221,7 +223,7 @@ GestureRecognizer.prototype = {
             return { x: event.targetTouches[0].pageX, y: event.targetTouches[0].pageY };
         if (Framework.Prototype) return Event.pointer(event);
         if (Framework.jQuery) return { x: event.pageX, y: event.pageY };
-    }
+    },
 
     gesturestart: function(event)
     {

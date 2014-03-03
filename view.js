@@ -1,5 +1,7 @@
 
-var GestureRecognizer = require("./GestureRecognizer");
+module.exports = GestureView;
+
+var GestureRecognizer = require("./gesture-recognizer");
 
 function GestureView(elementOrId)
 {

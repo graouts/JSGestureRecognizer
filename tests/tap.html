@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript" src="../build/build.js" charset="utf-8"></script>
+    <script type="text/javascript" charset="utf-8">
+
+        var GestureRecognizer    = require("gesture-recognizer"),
+            GestureView          = require("gesture-recognizer/view"),
+            TapGestureRecognizer = require("gesture-recognizer/tap");
+        
+        var tap = new TapGestureRecognizer();
+        tap.numberOfTapsRequired = 1;
+        tap.initWithCallback(function(sender) {
+            if (sender.state == GestureRecognizer.States.Recognized)
+                console.log('tapped : ' + sender.taps + ' time(s)');
+        });
+         
+        window.addEventListener("DOMContentLoaded", function() {
+            var tapTarget = new GestureView('tap');
+            tapTarget.addGestureRecognizer(tap);
+        });
+        
+    </script>
+    <style type="text/css" media="screen">
+        
+        #tap {
+            position: absolute;
+            x: 10px;
+            y: 10px;
+            width: 100px;
+            height: 100px;
+            background-color: black;
+        }
+        
+    </style>
+</head>
+<body>
+    <div id="tap"></div>
+</body>
+</html>

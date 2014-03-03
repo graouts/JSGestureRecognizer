@@ -1,5 +1,7 @@
 
-var GestureRecognizer = require("./GestureRecognizer");
+module.exports = LongPressGestureRecognizer;
+
+var GestureRecognizer = require("./gesture-recognizer");
 
 function LongPressGestureRecognizer()
 {
