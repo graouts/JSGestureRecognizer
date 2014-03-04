@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SwipeGestureRecognizer</title>
+    <link rel="stylesheet" href="tests.css" type="text/css">
+    <script type="text/javascript" src="../build/build.js" charset="utf-8"></script>
+    <script type="text/javascript" charset="utf-8">
+
+        var GestureRecognizer      = require("gesture-recognizer"),
+            SwipeGestureRecognizer = require("gesture-recognizer/swipe"),
+            GestureView            = require("gesture-recognizer/view");
+
+        var recognizer = new SwipeGestureRecognizer;
+        recognizer.direction = SwipeGestureRecognizer.Directions.Right | SwipeGestureRecognizer.Directions.Left;
+        recognizer.addEventListener("statechange", function(event) {
+            if (recognizer.state === GestureRecognizer.States.Recognized)
+                alert("Swiped");
+        });
+
+        window.addEventListener("DOMContentLoaded", function() {
+            new GestureView("target").addGestureRecognizer(recognizer);
+        });
+
+    </script>
+</head>
+<body>
+    <div id="target"></div>
+</body>
+</html>

@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PinchGestureRecognizer</title>
+    <title>RotationGestureRecognizer</title>
     <link rel="stylesheet" href="tests.css" type="text/css">
     <script type="text/javascript" src="../build/build.js" charset="utf-8"></script>
     <script type="text/javascript" charset="utf-8">
 
-        var GestureRecognizer      = require("gesture-recognizer"),
-            PinchGestureRecognizer = require("gesture-recognizer/pinch"),
-            GestureView            = require("gesture-recognizer/view");
+        var GestureRecognizer         = require("gesture-recognizer"),
+            RotationGestureRecognizer = require("gesture-recognizer/rotation"),
+            GestureView               = require("gesture-recognizer/view");
 
-        var startScale = 1,
-            scale = 1;
+        var startRotation = 0,
+            rotation = 0;
 
-        var recognizer = new PinchGestureRecognizer;
+        var recognizer = new RotationGestureRecognizer;
         recognizer.addEventListener("statechange", function(event) {
             if (recognizer.state === GestureRecognizer.States.Began)
-                startScale = scale;
+                startRotation = rotation;
             else if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state == GestureRecognizer.States.Changed) {
-                scale = startScale * recognizer.scale;
-                recognizer.view.transform = { scale: scale };
+                rotation = startRotation + recognizer.rotation;
+                recognizer.view.transform = { rotation: rotation };
             }
         });
 

@@ -12,44 +12,35 @@ PinchGestureRecognizer.prototype = {
     constructor: PinchGestureRecognizer,
     __proto__: GestureRecognizer.prototype,
 
-    gesturestart: function(event)
+    touchesBegan: function(event)
     {
+        if (event.target !== this.target || event.targetTouches !== 2)
+            return;
 
-        if (event.target == this.target) {
-            var allTouches = event.allTouches();
-            if (allTouches.length == 2) {
-                event.preventDefault();
-                GestureRecognizer.prototype.gesturestart.call(this, event);
-            }
-        }
+        event.preventDefault();
+        GestureRecognizer.prototype.touchesBegan.call(this, event);
     },
     
-    gesturechange: function(event)
+    gestureChanged: function(event)
     {
-        if (event.target == this.target) {
-            event.preventDefault();
-            if (this.beganRecognizer == false) {
-                this.fire(this.target, GestureRecognizer.States.Began, this);
-                this.beganRecognizer = true;
-            } else {
-                this.fire(this.target, GestureRecognizer.States.Changed, this);
-                this.velocity = event.scale / this.scale;
-                this.scale *= event.scale;
-            }
+        if (event.target !== this.target)
+            return;
+
+        event.preventDefault();
+        if (!this._beganRecognizer) {
+            this.enteredBeganState();
+            this._beganRecognizer = true;
+        } else {
+            this.enteredChangedState();
+            this.velocity = event.scale / this.scale;
+            this.scale = event.scale;
         }
     },
     
     reset: function()
     {
-        this.beganRecognizer = false;
+        this._beganRecognizer = false;
         this.scale = 1;
         this.velocity = 0;
-    },
-    
-    setScale: function(scale)
-    {
-        if (typeof scale == 'number') {
-            this.scale = scale;
-        }
     }
 };

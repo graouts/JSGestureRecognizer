@@ -5,59 +5,51 @@ var GestureRecognizer = require("./gesture-recognizer");
 
 function LongPressGestureRecognizer()
 {
+    // FIXME: implement and expose .allowableMovement and .numberOfTapsRequired
+    this.minimumPressDuration = 400;
+    this.numberOfTouchesRequired = 1;
+
     GestureRecognizer.call(this);
 }
-
-LongPressGestureRecognizer.MinimumPressDuration = 400;
-LongPressGestureRecognizer.NumberOfTouchesRequired = 1;
 
 LongPressGestureRecognizer.prototype = {
     constructor: LongPressGestureRecognizer,
     __proto__: GestureRecognizer.prototype,
 
-    touchstart: function(event)
+    touchesBegan: function(event)
     {
-        if (event.target == this.target) {
+        if (event.target !== this.target)
+            return;
+
+        event.preventDefault();
+
+        GestureRecognizer.prototype.touchesBegan.call(this, event);
+
+        if (this.numberOfTouchesRequired === event.targetTouches.length)
+            this._timerId = window.setTimeout(this.enteredRecognizedState.bind(this), this.minimumPressDuration);
+    },
+    
+    touchesMoved: function(event)
+    {
+        if (event.target === this.target && GestureRecognizer.SupportsTouches) {
             event.preventDefault();
-            GestureRecognizer.prototype.touchstart.call(this, event);
-            if (LongPressGestureRecognizer.NumberOfTouchesRequired == event.allTouches().length) {
-                this.recognizerTimer = window.setTimeout(function() {
-                    this.fire(this.target, GestureRecognizer.States.Recognized, this);
-                }.bind(this), LongPressGestureRecognizer.MinimumPressDuration);
-            }
+            this.enteredFailedState();
         }
     },
     
-    touchmove: function(event)
+    touchesEnded: function(event)
     {
-        // FIXME: allow some tolerance here.
-        if (event.target == this.target && GestureRecognizer.SupportsTouches) {
+        if (event.target === this.target) {
             event.preventDefault();
-            this.fire(this.target, GestureRecognizer.States.Failed, this);
-        }
-    },
-    
-    touchend: function(event)
-    {
-        if (event.target == this.target) {
-            event.preventDefault();
-            this.fire(this.target, GestureRecognizer.States.Failed, this);
-        }
-    },
-    
-    gesturestart: function(event)
-    {
-        if (event.target == this.target) {
-            event.preventDefault();
-            this.fire(this.target, GestureRecognizer.States.Failed);
+            this.enteredFailedState();
         }
     },
     
     reset: function()
     {
-        if (this.recognizerTimer) {
-            window.clearTimeout(this.recognizerTimer);
+        if (this._timerId) {
+            window.clearTimeout(this._timerId);
         }
-        this.recognizerTimer = null;
+        delete this._timerId;
     }
 };

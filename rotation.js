@@ -12,29 +12,28 @@ RotationGestureRecognizer.prototype = {
     constructor: RotationGestureRecognizer,
     __proto__: GestureRecognizer.prototype,
 
-    gesturestart: function(event)
+    touchesBegan: function(event)
     {
-        if (event.target == this.target) {
-            var allTouches = event.allTouches();
-            if (allTouches.length == 2) {
-                event.preventDefault();
-                GestureRecognizer.prototype.gesturestart.call(this, event);
-            }
-        }
+        if (event.target !== this.target || event.targetTouches !== 2)
+            return;
+
+        event.preventDefault();
+        GestureRecognizer.prototype.touchesBegan.call(this, event);
     },
     
-    gesturechange: function(event)
+    gestureChanged: function(event)
     {
-        if (event.target == this.target) {
-            event.preventDefault();
-            if (this.beganRecognizer == false) {
-                this.fire(this.target, GestureRecognizer.States.Began, this);
-                this.beganRecognizer = true;
-            } else {
-                this.fire(this.target, GestureRecognizer.States.Changed, this);
-                this.velocity = event.rotation - this.rotation;
-                this.rotation += event.rotation;
-            }
+        if (event.target !== this.target)
+            return;
+
+        event.preventDefault();
+        if (this.beganRecognizer == false) {
+            this.enteredBeganState();
+            this.beganRecognizer = true;
+        } else {
+            this.enteredChangedState();
+            this.velocity = event.rotation - this.rotation;
+            this.rotation = event.rotation;
         }
     },
     
@@ -43,12 +42,5 @@ RotationGestureRecognizer.prototype = {
         this.beganRecognizer = false;
         this.rotation = 0;
         this.velocity = 0;
-    },
-    
-    setRotation: function(rot)
-    {
-        if (typeof rot == 'number') {
-            this.rotation = rot;
-        }
     }
 };

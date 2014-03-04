@@ -1,94 +1,79 @@
 
 module.exports = PanGestureRecognizer;
 
-var GestureRecognizer = require("./gesture-recognizer");
+var GestureRecognizer = require("./gesture-recognizer"),
+    Point = require("geometry/point");
 
 function PanGestureRecognizer()
 {
+    this.minimumNumberOfTouches = 1;
+    this.maximumNumberOfTouches = 100000;
+
     GestureRecognizer.call(this);
 }
-
-PanGestureRecognizer.MaximumNumberOfTouches = 100000;
-PanGestureRecognizer.MinimumNumberOfTouches = 1;
 
 PanGestureRecognizer.prototype = {
     constructor: PanGestureRecognizer,
     __proto__: GestureRecognizer.prototype,
 
-    touchstart: function(event)
+    touchesBegan: function(event)
     {
-        if (event.target == this.target) {
-            GestureRecognizer.prototype.touchstart.call(this, event);
-            var allTouches = event.allTouches();
-            if (allTouches.length > PanGestureRecognizer.MaximumNumberOfTouches ||
-                allTouches.length < PanGestureRecognizer.MinimumNumberOfTouches)
-                this.touchend(event);
+        if (event.target !== this.target)
+            return;
+
+        GestureRecognizer.prototype.touchesBegan.call(this, event);
+
+        var touches = event.targetTouches;
+        if (touches.length < this.minimumNumberOfTouches || touches.length > this.maximumNumberOfTouches)
+            this.enteredFailedState();
+    },
+    
+    touchesMoved: function(event)
+    {
+        var touches = event.targetTouches;
+        if (touches.length < this.minimumNumberOfTouches || touches.length > this.maximumNumberOfTouches)
+            return;
+
+        if (GestureRecognizer.SupportsTouches) {
+            if (event.target !== this.target) {
+                this.touchesEnded(event);
+                return;
+            }
+        }
+
+        event.preventDefault();
+
+        if (!this._beganRecognizer) {
+            this.enteredBeganState();
+            this._beganRecognizer = true;
+            this._translationOrigin = Point.fromEvent(event);
+        } else {
+            this.enteredChangedState();
+            var p = Point.fromEvent(event);
+            
+            this.velocity.x = p.x - this.translation.x;
+            this.velocity.y = p.y - this.translation.y;
+            
+            this.translation.x = p.x - this._translationOrigin.x;
+            this.translation.y = p.y - this._translationOrigin.y;
         }
     },
     
-    touchmove: function(event)
+    touchesEnded: function(event)
     {
-        var allTouches = event.allTouches();
-        if (allTouches.length >= PanGestureRecognizer.MinimumNumberOfTouches &&
-            allTouches.length <= PanGestureRecognizer.MaximumNumberOfTouches) {
-            if (GestureRecognizer.SupportsTouches) {
-                if (event.target != this.target) {
-                    this.touchend(event);
-                    return;
-                }
-            }
-            event.preventDefault();
-            if (this.beganRecognizer == false) {
-                this.fire(this.target, GestureRecognizer.States.Began, this);
-                this.beganRecognizer = true;
-                this.translationOrigin = this.getEventPoint(event);
-            } else {
-                this.fire(this.target, GestureRecognizer.States.Changed, this);
-                var p = this.getEventPoint(event);
-                
-                this.velocity.x = p.x - this.translation.x;
-                this.velocity.y = p.y - this.translation.y;
-                
-                this.translation.x += p.x - this.translationOrigin.x;
-                this.translation.y += p.y - this.translationOrigin.y;
-            }
-        }
-    },
-    
-    touchend: function(event)
-    {
-        if (event.target == this.target || !GestureRecognizer.SupportsTouches) {
-            GestureRecognizer.prototype.touchend.call(this, event);
-            if (this.beganRecognizer) {
-                this.fire(this.target, GestureRecognizer.States.Ended, this);
-            } else {
-                this.fire(this.target, GestureRecognizer.States.Failed, this);
-            }
-        }
-    },
-    
-    gesturestart: function(event)
-    {
-        if (event.target == this.target) {
-            var allTouches = event.allTouches();
-            if (allTouches.length > PanGestureRecognizer.MaximumNumberOfTouches) {
-                this.fire(this.target, GestureRecognizer.States.Failed, this);
-            }
+        if (event.target === this.target || !GestureRecognizer.SupportsTouches) {
+            GestureRecognizer.prototype.touchesEnded.call(this, event);
+            if (this.beganRecognizer)
+                this.enteredEndedState();
+            else
+                this.enteredFailedState();
         }
     },
     
     reset: function()
     {
-        this.beganRecognizer = false;
-        this.translation = { x: 0, y: 0 };
-        this.velocity = { x: 0, y: 0 };
-    },
-    
-    setTranslation: function(translation)
-    {
-        if (typeof translation.x != 'undefined' &&
-            typeof translation.y != 'undefined') {
-            this.translation = { x: translation.x, y: translation.y };
-        }
+        this._beganRecognizer = false;
+        this.translation = new Point;
+        this.velocity = new Point;
     }
 };

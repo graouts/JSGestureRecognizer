@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PanGestureRecognizer</title>
+    <link rel="stylesheet" href="tests.css" type="text/css">
+    <script type="text/javascript" src="../build/build.js" charset="utf-8"></script>
+    <script type="text/javascript" charset="utf-8">
+
+        var GestureRecognizer    = require("gesture-recognizer"),
+            PanGestureRecognizer = require("gesture-recognizer/pan"),
+            GestureView          = require("gesture-recognizer/view"),
+            Point                = require("geometry").Point;
+
+        var startTranslation = new Point,
+            translation = new Point;
+
+        var recognizer = new PanGestureRecognizer;
+        recognizer.maximumNumberOfTouches = 1;
+        recognizer.addEventListener("statechange", function(event) {
+            if (recognizer.state === GestureRecognizer.States.Began)
+                startTranslation = translation.copy();
+            else if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state == GestureRecognizer.States.Changed) {
+                translation.x = startTranslation.x + recognizer.translation.x;
+                translation.y = startTranslation.y + recognizer.translation.y;
+                recognizer.view.transform = translation;
+            }
+        });
+
+        window.addEventListener("DOMContentLoaded", function() {
+            new GestureView("target").addGestureRecognizer(recognizer);
+        });
+
+    </script>
+</head>
+<body>
+    <div id="target"></div>
+</body>
+</html>

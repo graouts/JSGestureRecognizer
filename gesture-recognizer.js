@@ -1,35 +1,38 @@
 
 module.exports = GestureRecognizer;
 
-var DOM = require("dom-events");
+var DOM = require("dom-events"),
+    Point = require("geometry/point");
 
 function GestureRecognizer()
 {
     DOM.EventTarget.call(this);
 
     this._target = null;
+    this.view = null;
     this.state = GestureRecognizer.States.Possible;
 }
 
 GestureRecognizer.SupportsTouches = "createTouch" in document;
 
 GestureRecognizer.States = {
-    Possible   : 'possible',
-    Began      : 'began',
-    Changed    : 'changed',
-    Ended      : 'ended',
-    Cancelled  : 'cancelled',
-    Failed     : 'failed',
+    Possible   : "possible",
+    Began      : "began",
+    Changed    : "changed",
+    Ended      : "ended",
+    Cancelled  : "cancelled",
+    Failed     : "failed",
     Recognized : "ended"
 };
 
 GestureRecognizer.Events = {
-    TouchStart     : 'touchstart',
-    TouchMove      : 'touchmove',
-    TouchEnd       : 'touchend',
-    GestureStart   : 'gesturestart',
-    GestureChange  : 'gesturechange',
-    GestureEnd     : 'gestureend'
+    TouchStart     : GestureRecognizer.SupportsTouches ? "touchstart" : "mousedown",
+    TouchMove      : GestureRecognizer.SupportsTouches ? "touchmove" : "mousemove",
+    TouchEnd       : GestureRecognizer.SupportsTouches ? "touchend" : "mouseup",
+    GestureStart   : "gesturestart",
+    GestureChange  : "gesturechange",
+    GestureEnd     : "gestureend",
+    StateChange    : "statechange"
 };
 
 GestureRecognizer.addGestureRecognizer = function(target, gestureRecognizer) {
@@ -47,208 +50,158 @@ GestureRecognizer.prototype = {
 
     set target(target)
     {
-        var target = (target.view) ? target.view : target;
-        if (target !== null && this._target != target) {
-            this._target = target;
-            this.view = target;
-            this.initRecognizer();
-        }
-    },
+        if (!target || this._target === target)
+            return;
 
-    initWithCallback: function(callback)
-    {
-        if (typeof callback == 'function')
-            this.callback = callback;
-        else
-            throw new Error("Callback must be set otherwise this won't do anything!");
+        this._target = target;
+        this.initRecognizer();
     },
 
     initRecognizer: function()
     {
         if (this._target === null)
-            throw new Error("this._target is null, must be a DOM element.");
+            throw new Error("Failed to initialize gesture recognizer, `this.target` is `null` but must be a DOM element.");
 
         this.reset();
         this.state = GestureRecognizer.States.Possible;
 
-        this._target.addEventListener(GestureRecognizer.Events.TouchStart, this.touchstart, this);
-
-        this.observe(this._target, GestureRecognizer.States.Possible, this.possible.bind(this));
-        this.observe(this._target, GestureRecognizer.States.Began, this.began.bind(this));
-        this.observe(this._target, GestureRecognizer.States.Ended, this.ended.bind(this));
-        this.observe(this._target, GestureRecognizer.States.Cancelled, this.cancelled.bind(this));
-        this.observe(this._target, GestureRecognizer.States.Failed, this.failed.bind(this));
-        this.observe(this._target, GestureRecognizer.States.Changed, this.changed.bind(this));
-        
-        this.gesturechangeHandler = this.gesturechange.bind(this);
-        this.gestureendHandler = this.gestureend.bind(this);
-
-        this.observe(this.target, GestureRecognizer.Events.TouchStart, this.gesturestart.bind(this));
+        this._target.addEventListener(GestureRecognizer.Events.TouchStart, this);
+        if (GestureRecognizer.SupportsTouches)
+            this._target.addEventListener(GestureRecognizer.Events.GestureStart, this);
     },
 
     reset: function()
     {
         // …
     },
-  
-    touchstart: function(event, obj)
+
+    // Touch and gesture event handling
+
+    handleEvent: function(event)
     {
-        if (this._target && event.target === this._target) {
-            this.addObservers();
-            this.fire(this._target, GestureRecognizer.States.Possible, this);
+        if (!GestureRecognizer.SupportsTouches)
+            event.targetTouches = [event];
+            
+        switch (event.type) {
+        case GestureRecognizer.Events.TouchStart:
+            this.touchesBegan(event);
+            break;
+        case GestureRecognizer.Events.TouchMove:
+            this.touchesMoved(event);
+            break;
+        case GestureRecognizer.Events.TouchEnd:
+            this.touchesEnded(event);
+            break;
+        case GestureRecognizer.Events.GestureStart:
+            this.gestureBegan(event);
+            break;
+        case GestureRecognizer.Events.GestureChange:
+            this.gestureChanged(event);
+            break;
+        case GestureRecognizer.Events.GestureEnd:
+            this.gestureEnded(event);
+            break;
         }
     },
     
-    touchmove: function(event)
+    touchesBegan: function(event)
+    {
+        if (event.target !== this._target)
+            return;
+
+        // FIXME: deal with touchcancel as well.
+        window.addEventListener(GestureRecognizer.Events.TouchMove, this, true);
+        window.addEventListener(GestureRecognizer.Events.TouchEnd, this, true);
+        this.enteredPossibleState();
+    },
+    
+    touchesMoved: function(event)
     {
         // …
     },
 
-    touchend: function(event)
+    touchesEnded: function(event)
     {
         // …
     },
 
-    touchcancelled: function(event)
+    gestureBegan: function(event)
+    {
+        if (event.target !== this._target)
+            return;
+
+        window.addEventListener(GestureRecognizer.Events.GestureChange, this, true);
+        window.addEventListener(GestureRecognizer.Events.GestureEnd, this, true);
+        this.enteredPossibleState();
+    },
+
+    gestureChanged: function(event)
     {
         // …
     },
 
-    possible: function(event, memo)
+    gestureEnded: function(event)
     {
-        if (!event.memo)
-            event.memo = memo;
-        if (event.memo == this) {
-            this.state = GestureRecognizer.States.Possible;
-            if (this.callback)
-                this.callback(this);
-        }
+        if (event.target === this._target)
+            this.enteredEndedState();
     },
 
-    began: function(event, memo)
+    // State changes
+
+    enteredPossibleState: function()
     {
-        if (!event.memo)
-            event.memo = memo;
-        if (event.memo == this) {
-            this.state = GestureRecognizer.States.Began;
-            if (this.callback)
-                this.callback(this);
-        }
+        this._setStateAndNotifyOfChange(GestureRecognizer.States.Possible);
     },
 
-    ended: function(event, memo)
+    enteredBeganState: function()
     {
-        if (!event.memo)
-            event.memo = memo;
-        if (event.memo == this) {
-            this.state = GestureRecognizer.States.Ended;
-            if (this.callback)
-                this.callback(this);
-            this.removeObservers();
-            this.reset();
-        }
-    },
-    
-    cancelled: function(event, memo)
-    {
-        if (!event.memo)
-            event.memo = memo;
-        if (event.memo == this) {
-            this.state = GestureRecognizer.States.Cancelled;
-            if (this.callback)
-                this.callback(this);
-            this.removeObservers();
-            this.reset();
-        }
-    },
-    
-    failed: function(event, memo)
-    {
-        if (!event.memo)
-            event.memo = memo;
-        if (event.memo == this) {
-            this.state = GestureRecognizer.States.Failed;
-            if (this.callback)
-                this.callback(this);
-            this.removeObservers();
-            this.reset();
-        }
-    },
-    
-    changed: function(event, memo)
-    {
-        if (!event.memo) event.memo = memo;
-        if (event.memo == this) {
-            this.state = GestureRecognizer.States.Changed;
-            if (this.callback)
-                this.callback(this);
-        }
-    },
-    
-    addObservers: function()
-    {
-        document.addEventListener(GestureRecognizer.Events.TouchMove, this.touchmove, this);
-        document.addEventListener(GestureRecognizer.Events.TouchEnd, this.touchend, this);
-    },
-    
-    removeObservers: function()
-    {
-        document.removeEventListener(GestureRecognizer.Events.TouchMove, this.touchmove, this);
-        document.removeEventListener(GestureRecognizer.Events.TouchEnd, this.touchend, this);
-
-        this.stopObserving(document, GestureRecognizer.Events.GestureChange, this.gesturechangeHandler);
-        this.stopObserving(document, GestureRecognizer.Events.GestureEnd, this.gestureendHandler);
-    },
-    
-    fire: function(target, eventName, obj)
-    {
-        // if (Framework.Prototype)
-        //     Event.fire(target, eventName, obj);
-        // else if (Framework.jQuery)
-        //     $(target).trigger(eventName, obj);
-    },
-    
-    observe: function(target, eventName, handler)
-    {
-        // if (Framework.Prototype)
-        //     target.observe(eventName, handler);
-        // else if (Framework.jQuery)
-        //     $(target).bind(eventName, handler);
-    },
-    
-    stopObserving: function(target, eventName, handler)
-    {
-        // if (Framework.Prototype)
-        //     target.stopObserving(eventName, handler);
-        // else if (Framework.jQuery)
-        //     $(target).unbind(eventName, handler);
-    },
-    
-    getEventPoint: function(event)
-    {
-        if (GestureRecognizer.SupportsTouches)
-            return { x: event.targetTouches[0].pageX, y: event.targetTouches[0].pageY };
-        // if (Framework.Prototype) return Event.pointer(event);
-        // if (Framework.jQuery) return { x: event.pageX, y: event.pageY };
+        this._setStateAndNotifyOfChange(GestureRecognizer.States.Began);
     },
 
-    gesturestart: function(event)
+    enteredEndedState: function()
     {
-        if (this.target && event.target === this.target) {
-            this.observe(document, GestureRecognizer.Events.GestureChange, this.gesturechangeHandler);
-            this.observe(document, GestureRecognizer.Events.GestureEnd, this.gestureendHandler);
-            this.fire(this.target, GestureRecognizer.States.Possible, this);
-        }
+        this._setStateAndNotifyOfChange(GestureRecognizer.States.Ended);
+        this._removeObservers();
+        this.reset();
     },
 
-    gesturechange: function(event)
+    enteredCancelledState: function()
     {
-        // …
+        this._setStateAndNotifyOfChange(GestureRecognizer.States.Cancelled);
+        this._removeObservers();
+        this.reset();
     },
 
-    gestureend: function(event)
+    enteredFailedState: function()
     {
-        if (this.target && event.target == this.target)
-            this.fire(this.target, GestureRecognizer.States.Ended, this);
+        this._setStateAndNotifyOfChange(GestureRecognizer.States.Failed);
+        this._removeObservers();
+        this.reset();
+    },
+
+    enteredChangedState: function()
+    {
+        this._setStateAndNotifyOfChange(GestureRecognizer.States.Changed);
+    },
+
+    enteredRecognizedState: function()
+    {
+        this._setStateAndNotifyOfChange(GestureRecognizer.States.Recognized);
+    },
+
+    // Private
+
+    _removeObservers: function()
+    {
+        window.removeEventListener(GestureRecognizer.Events.TouchMove, this, true);
+        window.removeEventListener(GestureRecognizer.Events.TouchEnd, this, true);
+        window.removeEventListener(GestureRecognizer.Events.GestureChange, this, true);
+        window.removeEventListener(GestureRecognizer.Events.GestureEnd, this, true);
+    },
+
+    _setStateAndNotifyOfChange: function(state)
+    {
+        this.state = state;
+        this.dispatchEvent(new DOM.Event(GestureRecognizer.Events.StateChange));
     }
 };

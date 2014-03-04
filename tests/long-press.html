@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LongPressGestureRecognizer</title>
+    <link rel="stylesheet" href="tests.css" type="text/css">
+    <script type="text/javascript" src="../build/build.js" charset="utf-8"></script>
+    <script type="text/javascript" charset="utf-8">
+
+        var GestureRecognizer          = require("gesture-recognizer"),
+            LongPressGestureRecognizer = require("gesture-recognizer/long-press"),
+            GestureView                = require("gesture-recognizer/view");
+
+        var recognizer = new LongPressGestureRecognizer;
+        recognizer.maximumNumberOfTouches = 1;
+        recognizer.addEventListener("statechange", function(event) {
+            if (event.target.state === GestureRecognizer.States.Recognized)
+                alert("Long press!");
+        });
+
+        window.addEventListener("DOMContentLoaded", function() {
+            new GestureView("target").addGestureRecognizer(recognizer);
+        });
+
+    </script>
+</head>
+<body>
+    <div id="target"></div>
+</body>
+</html>

@@ -1,16 +1,17 @@
 
-module.exports = GestureRecognizer;
+module.exports = SwipeGestureRecognizer;
 
-var GestureRecognizer = require("./gesture-recognizer");
+var GestureRecognizer = require("./gesture-recognizer"),
+    Point = require("geometry/point");
 
 function SwipeGestureRecognizer()
 {
+    this.numberOfTouchesRequired = 1;
     this.direction = SwipeGestureRecognizer.Directions.Right;
 
     GestureRecognizer.call(this);
 }
 
-SwipeGestureRecognizer.NumberOfTouchesRequired = 1;
 SwipeGestureRecognizer.MinimumDistance = 100;
 SwipeGestureRecognizer.Directions = {
     Right : 1 << 0,
@@ -23,62 +24,59 @@ SwipeGestureRecognizer.prototype = {
     constructor: SwipeGestureRecognizer,
     __proto__: GestureRecognizer.prototype,
     
-    touchstart: function(event)
+    touchesBegan: function(event)
     {
-        var allTouches = event.allTouches();
-        if (event.target == this.target) {
-            if (SwipeGestureRecognizer.NumberOfTouchesRequired == allTouches.length) {
-                event.preventDefault();
-                GestureRecognizer.prototype.touchstart.call(this, event);
-                this.startingPos = { x: allTouches[0].pageX, y: allTouches[0].pageY };
-                this.distance = { x: 0, y: 0 };
-            } else {
-                this.fire(this.target, GestureRecognizer.States.Failed, this);
-            }
-        }
-    },
-    
-    touchmove: function(event)
-    {
-        var allTouches = event.allTouches();
-        if (event.target == this.target && SwipeGestureRecognizer.NumberOfTouchesRequired == allTouches.length) {
+        if (event.target !== this.target)
+            return;
+
+        var touches = event.targetTouches;
+        if (this.numberOfTouchesRequired === touches.length) {
             event.preventDefault();
-            var allTouches = event.allTouches();
-            this.distance.x = allTouches[0].pageX - this.startingPos.x;
-            this.distance.y = allTouches[0].pageY - this.startingPos.y;
-            
-            if (this.direction & SwipeGestureRecognizer.DirectionsRight) {
-                if (this.distance.x > SwipeGestureRecognizer.MinimumDistance) {
-                    this.fire(this.target, GestureRecognizer.States.Recognized, this);
-                }
-            }
-            
-            if (this.direction & SwipeGestureRecognizer.DirectionsLeft) {
-                if (this.distance.x < -SwipeGestureRecognizer.MinimumDistance) {
-                    this.fire(this.target, GestureRecognizer.States.Recognized, this);
-                }
-            }
-            
-            if (this.direction & SwipeGestureRecognizer.DirectionsUp) {
-                if (this.distance.y < -SwipeGestureRecognizer.MinimumDistance) {
-                    this.fire(this.target, GestureRecognizer.States.Recognized, this);
-                }
-            }
-            
-            if (this.direction & SwipeGestureRecognizer.DirectionsDown) {
-                if (this.distance.y > SwipeGestureRecognizer.MinimumDistance) {
-                    this.fire(this.target, GestureRecognizer.States.Recognized, this);
-                }
-            }
-        } else {
-            this.fire(this.target, GestureRecognizer.States.Failed, this);
+            GestureRecognizer.prototype.touchesBegan.call(this, event);
+            this.startingPos = new Point(touches[0].pageX, touches[0].pageY);
+            this.distance = new Point;
+        } else
+            this.enteredFailedState();
+    },
+    
+    touchesMoved: function(event)
+    {
+        var touches = event.targetTouches;
+        if (event.target !== this.target || this.numberOfTouchesRequired !== touches.length) {
+            this.enteredFailedState();
+            return;
+        }
+        
+        event.preventDefault();
+
+        // FIXME: we should take into account velocity and angle here.
+        this.distance.x = touches[0].pageX - this.startingPos.x;
+        this.distance.y = touches[0].pageY - this.startingPos.y;
+        
+        if (this.state !== GestureRecognizer.States.Recognized && this.direction & SwipeGestureRecognizer.Directions.Right) {
+            if (this.distance.x > SwipeGestureRecognizer.MinimumDistance)
+                this.enteredRecognizedState();
+        }
+        
+        if (this.state !== GestureRecognizer.States.Recognized && this.direction & SwipeGestureRecognizer.Directions.Left) {
+            if (this.distance.x < -SwipeGestureRecognizer.MinimumDistance)
+                this.enteredRecognizedState();
+        }
+        
+        if (this.state !== GestureRecognizer.States.Recognized && this.direction & SwipeGestureRecognizer.Directions.Up) {
+            if (this.distance.y < -SwipeGestureRecognizer.MinimumDistance)
+                this.enteredRecognizedState();
+        }
+        
+        if (this.state !== GestureRecognizer.States.Recognized && this.direction & SwipeGestureRecognizer.Directions.Down) {
+            if (this.distance.y > SwipeGestureRecognizer.MinimumDistance)
+                this.enteredRecognizedState();
         }
     },
     
-    touchend: function(event)
+    touchesEnded: function(event)
     {
-        if (event.target == this.target) {
-            this.fire(this.target, GestureRecognizer.States.Failed, this);
-        }
+        if (event.target === this.target)
+            this.enteredFailedState();
     }
 };

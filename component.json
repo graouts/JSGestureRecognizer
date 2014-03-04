@@ -5,7 +5,8 @@
     "version": "0.0.1",
     "keywords": [],
     "dependencies": {
-        "graouts/dom-events": "*"
+        "graouts/dom-events": "*",
+        "graouts/geometry": "*"
     },
     "development": {},
     "license": "MIT",
