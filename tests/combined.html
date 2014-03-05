@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Combining multiple gesture recognizers</title>
+    <link rel="stylesheet" href="tests.css" type="text/css">
+    <script type="text/javascript" src="../build/build.js" charset="utf-8"></script>
+    <script type="text/javascript" charset="utf-8">
+
+        var GestureRecognizer         = require("gesture-recognizer"),
+            TapGestureRecognizer      = require("gesture-recognizer/tap"),
+            PanGestureRecognizer      = require("gesture-recognizer/pan"),
+            PinchGestureRecognizer    = require("gesture-recognizer/pinch"),
+            RotationGestureRecognizer = require("gesture-recognizer/rotation"),
+            GestureView               = require("gesture-recognizer/view"),
+            Point                     = require("geometry").Point;
+
+        var tapRecognizer = new TapGestureRecognizer;
+        tapRecognizer.numberOfTapsRequired = 3;
+        tapRecognizer.addEventListener("statechange", function(event) {
+            if (tapRecognizer.state === GestureRecognizer.States.Recognized)
+                alert("tapped three times!");
+        });
+
+        var translation = new Point;
+        var panRecognizer = new PanGestureRecognizer;
+        panRecognizer.maximumNumberOfTouches = 1;
+        panRecognizer.addEventListener("statechange", function(event) {
+            if (panRecognizer.state === GestureRecognizer.States.Ended || panRecognizer.state == GestureRecognizer.States.Changed) {
+                translation.x += panRecognizer.translation.x;
+                translation.y += panRecognizer.translation.y;
+                panRecognizer.view.transform = translation;
+                panRecognizer.translation = new Point;
+            }
+        });
+
+        var scale = 1;
+        var pinchRecognizer = new PinchGestureRecognizer;
+        pinchRecognizer.addEventListener("statechange", function(event) {
+            if (pinchRecognizer.state === GestureRecognizer.States.Ended || pinchRecognizer.state == GestureRecognizer.States.Changed) {
+                scale *= pinchRecognizer.scale;
+                pinchRecognizer.view.transform = { scale: scale };
+                pinchRecognizer.scale = 1;
+            }
+        });
+
+        var rotation = 0;
+        var rotationRecognizer = new RotationGestureRecognizer;
+        rotationRecognizer.addEventListener("statechange", function(event) {
+            if (rotationRecognizer.state === GestureRecognizer.States.Ended || rotationRecognizer.state == GestureRecognizer.States.Changed) {
+                rotation += rotationRecognizer.rotation;
+                rotationRecognizer.view.transform = { rotation: rotation };
+                rotationRecognizer.rotation = 0;
+            }
+        });
+
+        window.addEventListener("DOMContentLoaded", function() {
+            var view = new GestureView("target");
+            view.addGestureRecognizer(tapRecognizer);
+            view.addGestureRecognizer(panRecognizer);
+            view.addGestureRecognizer(pinchRecognizer);
+            view.addGestureRecognizer(rotationRecognizer);
+        });
+
+    </script>
+</head>
+<body>
+    <div id="target"></div>
+</body>
+</html>
