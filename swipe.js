@@ -36,14 +36,14 @@ SwipeGestureRecognizer.prototype = {
             this.startingPos = new Point(touches[0].pageX, touches[0].pageY);
             this.distance = new Point;
         } else
-            this.enteredFailedState();
+            this.enterFailedState();
     },
     
     touchesMoved: function(event)
     {
         var touches = event.targetTouches;
         if (event.target !== this.target || this.numberOfTouchesRequired !== touches.length) {
-            this.enteredFailedState();
+            this.enterFailedState();
             return;
         }
         
@@ -55,28 +55,28 @@ SwipeGestureRecognizer.prototype = {
         
         if (this.state !== GestureRecognizer.States.Recognized && this.direction & SwipeGestureRecognizer.Directions.Right) {
             if (this.distance.x > SwipeGestureRecognizer.MinimumDistance)
-                this.enteredRecognizedState();
+                this.enterRecognizedState();
         }
         
         if (this.state !== GestureRecognizer.States.Recognized && this.direction & SwipeGestureRecognizer.Directions.Left) {
             if (this.distance.x < -SwipeGestureRecognizer.MinimumDistance)
-                this.enteredRecognizedState();
+                this.enterRecognizedState();
         }
         
         if (this.state !== GestureRecognizer.States.Recognized && this.direction & SwipeGestureRecognizer.Directions.Up) {
             if (this.distance.y < -SwipeGestureRecognizer.MinimumDistance)
-                this.enteredRecognizedState();
+                this.enterRecognizedState();
         }
         
         if (this.state !== GestureRecognizer.States.Recognized && this.direction & SwipeGestureRecognizer.Directions.Down) {
             if (this.distance.y > SwipeGestureRecognizer.MinimumDistance)
-                this.enteredRecognizedState();
+                this.enterRecognizedState();
         }
     },
     
     touchesEnded: function(event)
     {
         if (event.target === this.target)
-            this.enteredFailedState();
+            this.enterFailedState();
     }
 };

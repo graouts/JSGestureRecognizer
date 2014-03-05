@@ -25,7 +25,7 @@ PanGestureRecognizer.prototype = {
 
         var touches = event.targetTouches;
         if (touches.length < this.minimumNumberOfTouches || touches.length > this.maximumNumberOfTouches)
-            this.enteredFailedState();
+            this.enterFailedState();
     },
     
     touchesMoved: function(event)
@@ -44,11 +44,11 @@ PanGestureRecognizer.prototype = {
         event.preventDefault();
 
         if (!this._beganRecognizer) {
-            this.enteredBeganState();
+            this.enterBeganState();
             this._beganRecognizer = true;
             this._translationOrigin = Point.fromEvent(event);
         } else {
-            this.enteredChangedState();
+            this.enterChangedState();
             var p = Point.fromEvent(event);
             
             this.velocity.x = p.x - this.translation.x;
@@ -64,9 +64,9 @@ PanGestureRecognizer.prototype = {
         if (event.target === this.target || !GestureRecognizer.SupportsTouches) {
             GestureRecognizer.prototype.touchesEnded.call(this, event);
             if (this.beganRecognizer)
-                this.enteredEndedState();
+                this.enterEndedState();
             else
-                this.enteredFailedState();
+                this.enterFailedState();
         }
     },
     

@@ -28,10 +28,10 @@ RotationGestureRecognizer.prototype = {
 
         event.preventDefault();
         if (this.beganRecognizer == false) {
-            this.enteredBeganState();
+            this.enterBeganState();
             this.beganRecognizer = true;
         } else {
-            this.enteredChangedState();
+            this.enterChangedState();
             this.velocity = event.rotation - this.rotation;
             this.rotation = event.rotation;
         }

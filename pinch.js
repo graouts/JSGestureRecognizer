@@ -28,10 +28,10 @@ PinchGestureRecognizer.prototype = {
 
         event.preventDefault();
         if (!this._beganRecognizer) {
-            this.enteredBeganState();
+            this.enterBeganState();
             this._beganRecognizer = true;
         } else {
-            this.enteredChangedState();
+            this.enterChangedState();
             this.velocity = event.scale / this.scale;
             this.scale = event.scale;
         }

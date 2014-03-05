@@ -112,7 +112,7 @@ GestureRecognizer.prototype = {
         // FIXME: deal with touchcancel as well.
         window.addEventListener(GestureRecognizer.Events.TouchMove, this, true);
         window.addEventListener(GestureRecognizer.Events.TouchEnd, this, true);
-        this.enteredPossibleState();
+        this.enterPossibleState();
     },
     
     touchesMoved: function(event)
@@ -132,7 +132,7 @@ GestureRecognizer.prototype = {
 
         window.addEventListener(GestureRecognizer.Events.GestureChange, this, true);
         window.addEventListener(GestureRecognizer.Events.GestureEnd, this, true);
-        this.enteredPossibleState();
+        this.enterPossibleState();
     },
 
     gestureChanged: function(event)
@@ -143,48 +143,48 @@ GestureRecognizer.prototype = {
     gestureEnded: function(event)
     {
         if (event.target === this._target)
-            this.enteredEndedState();
+            this.enterEndedState();
     },
 
     // State changes
 
-    enteredPossibleState: function()
+    enterPossibleState: function()
     {
         this._setStateAndNotifyOfChange(GestureRecognizer.States.Possible);
     },
 
-    enteredBeganState: function()
+    enterBeganState: function()
     {
         this._setStateAndNotifyOfChange(GestureRecognizer.States.Began);
     },
 
-    enteredEndedState: function()
+    enterEndedState: function()
     {
         this._setStateAndNotifyOfChange(GestureRecognizer.States.Ended);
         this._removeObservers();
         this.reset();
     },
 
-    enteredCancelledState: function()
+    enterCancelledState: function()
     {
         this._setStateAndNotifyOfChange(GestureRecognizer.States.Cancelled);
         this._removeObservers();
         this.reset();
     },
 
-    enteredFailedState: function()
+    enterFailedState: function()
     {
         this._setStateAndNotifyOfChange(GestureRecognizer.States.Failed);
         this._removeObservers();
         this.reset();
     },
 
-    enteredChangedState: function()
+    enterChangedState: function()
     {
         this._setStateAndNotifyOfChange(GestureRecognizer.States.Changed);
     },
 
-    enteredRecognizedState: function()
+    enterRecognizedState: function()
     {
         this._setStateAndNotifyOfChange(GestureRecognizer.States.Recognized);
     },

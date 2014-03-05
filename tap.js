@@ -40,7 +40,7 @@ TapGestureRecognizer.prototype = {
     {
         if (event.target === this.target && !GestureRecognizer.SupportsTouches) {
             event.preventDefault();
-            this.enteredFailedState();
+            this.enterFailedState();
         }
 
         var p = Point.fromEvent(event);
@@ -48,7 +48,7 @@ TapGestureRecognizer.prototype = {
             dy = p.y - this.translationOrigin.y;
         this.distance += Math.sqrt(dx*dx + dy*dy);
         if (this.distance > TapGestureRecognizer.MoveTolerance)
-            this.enteredFailedState();
+            this.enterFailedState();
     },
 
     touchesEnded: function(event)
@@ -62,13 +62,13 @@ TapGestureRecognizer.prototype = {
             this._taps++;
 
             if (this._taps === this.numberOfTapsRequired) {
-                this.enteredRecognizedState();
+                this.enterRecognizedState();
                 this.reset();
             }
 
             this._rewindTimer(TapGestureRecognizer.WaitingForNextTapToStartTimeout);
         } else
-            this.enteredFailedState();
+            this.enterFailedState();
     },
 
     reset: function()
@@ -93,6 +93,6 @@ TapGestureRecognizer.prototype = {
 
     _timerFired: function()
     {
-        this.enteredFailedState();
+        this.enterFailedState();
     }
 };
