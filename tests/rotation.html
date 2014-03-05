@@ -10,16 +10,14 @@
             RotationGestureRecognizer = require("gesture-recognizer/rotation"),
             GestureView               = require("gesture-recognizer/view");
 
-        var startRotation = 0,
-            rotation = 0;
+        var rotation = 0;
 
         var recognizer = new RotationGestureRecognizer;
         recognizer.addEventListener("statechange", function(event) {
-            if (recognizer.state === GestureRecognizer.States.Began)
-                startRotation = rotation;
-            else if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state == GestureRecognizer.States.Changed) {
-                rotation = startRotation + recognizer.rotation;
+            if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state == GestureRecognizer.States.Changed) {
+                rotation += recognizer.rotation;
                 recognizer.view.transform = { rotation: rotation };
+                recognizer.rotation = 0;
             }
         });
 
