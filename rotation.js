@@ -78,6 +78,6 @@ RotationGestureRecognizer.prototype = {
         }
 
         if (i > 0)
-            this._gestures = this._gestures.splice(i + 1);
+            this._gestures = this._gestures.slice(i + 1);
     }
 };
