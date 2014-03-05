@@ -11,18 +11,16 @@
             GestureView          = require("gesture-recognizer/view"),
             Point                = require("geometry").Point;
 
-        var startTranslation = new Point,
-            translation = new Point;
+        var translation = new Point;
 
         var recognizer = new PanGestureRecognizer;
         recognizer.maximumNumberOfTouches = 1;
         recognizer.addEventListener("statechange", function(event) {
-            if (recognizer.state === GestureRecognizer.States.Began)
-                startTranslation = translation.copy();
-            else if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state == GestureRecognizer.States.Changed) {
-                translation.x = startTranslation.x + recognizer.translation.x;
-                translation.y = startTranslation.y + recognizer.translation.y;
+            if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state == GestureRecognizer.States.Changed) {
+                translation.x += recognizer.translation.x;
+                translation.y += recognizer.translation.y;
                 recognizer.view.transform = translation;
+                recognizer.translation = new Point;
             }
         });
 
