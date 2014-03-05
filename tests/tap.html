@@ -11,10 +11,10 @@
             GestureView          = require("gesture-recognizer/view");
         
         var recognizer = new TapGestureRecognizer;
-        recognizer.numberOfTapsRequired = 1;
+        recognizer.numberOfTapsRequired = 3;
         recognizer.addEventListener("statechange", function(event) {
             if (event.target.state === GestureRecognizer.States.Recognized)
-                alert("tapped : " + event.target.taps + " time(s)");
+                console.log("tapped!");
         });
 
         window.addEventListener("DOMContentLoaded", function() {

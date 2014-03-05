@@ -13,7 +13,8 @@ function TapGestureRecognizer()
 }
 
 TapGestureRecognizer.MoveTolerance = 40;
-TapGestureRecognizer.TapTimeout = 500;
+TapGestureRecognizer.WaitingForNextTapToStartTimeout = 350;
+TapGestureRecognizer.WaitingForTapCompletionTimeout = 750;
 
 TapGestureRecognizer.prototype = {
     constructor: TapGestureRecognizer,
@@ -29,6 +30,8 @@ TapGestureRecognizer.prototype = {
         this.numberOfTouches = event.targetTouches.length;
         this.translationOrigin = Point.fromEvent(event);
         this.distance = 0;
+
+        this._rewindTimer(TapGestureRecognizer.WaitingForTapCompletionTimeout);
 
         event.preventDefault();
     },
@@ -56,32 +59,40 @@ TapGestureRecognizer.prototype = {
         if (this.numberOfTouches === this.numberOfTouchesRequired) {
             GestureRecognizer.prototype.touchesEnded.call(this, event);
 
-            this.taps++;
+            this._taps++;
 
-            if (this._timerId) {
-                window.clearTimeout(this._timerId);
-                delete this._timerId;
+            if (this._taps === this.numberOfTapsRequired) {
+                this.enteredRecognizedState();
+                this.reset();
             }
 
-            this._timerId = window.setTimeout(this._timerFired.bind(this), TapGestureRecognizer.TapTimeout);
+            this._rewindTimer(TapGestureRecognizer.WaitingForNextTapToStartTimeout);
         } else
             this.enteredFailedState();
     },
 
     reset: function()
     {
-        this.taps = 0;
-        delete this._timerId;
+        this._taps = 0;
+        this._clearTimer();
     },
 
     // Private
 
+    _clearTimer: function()
+    {
+        window.clearTimeout(this._timerId);
+        delete this._timerId;
+    },
+
+    _rewindTimer: function(timeout)
+    {
+        this._clearTimer();
+        this._timerId = window.setTimeout(this._timerFired.bind(this), timeout);
+    },
+
     _timerFired: function()
     {
-        if (this.taps === this.numberOfTapsRequired) {
-            this.enteredRecognizedState();
-            this.reset();
-        } else
-            this.enteredFailedState();
+        this.enteredFailedState();
     }
 };
