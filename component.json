@@ -1,6 +1,6 @@
 {
     "name": "gesture-recognizer",
-    "repo": "graouts/JSGestureRecognizer",
+    "repo": "graouts/gesture-recognizer",
     "description": "JavaScript implementation of UIGestureRecognizer",
     "version": "0.0.1",
     "keywords": [],
