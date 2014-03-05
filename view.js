@@ -15,15 +15,15 @@ GestureView.prototype = {
     constructor: GestureView,
 
     set transform(obj) {
-        var x        = this._getDefined(obj.x,        this._x,        this.x);
-        var y        = this._getDefined(obj.y,        this._y,        this.y);
-        var z        = this._getDefined(obj.z,        this._z,        this.z);
-        var scale    = this._getDefined(obj.scale,    this._scale,    this.scale);
-        var rotation = this._getDefined(obj.rotation, this._rotation, this.rotation);
+        this._x        = this._getDefined(obj.x,        this._x,        this.x);
+        this._y        = this._getDefined(obj.y,        this._y,        this.y);
+        this._z        = this._getDefined(obj.z,        this._z,        this.z);
+        this._scale    = this._getDefined(obj.scale,    this._scale,    this.scale);
+        this._rotation = this._getDefined(obj.rotation, this._rotation, this.rotation);
         this.element.style.webkitTransform = "translate3d(" +
-            x + "px, " + y + "px, " + z + ") " +
-            "scale(" + scale + ") " +
-            "rotate(" + rotation + "deg)";
+            this._x + "px, " + this._y + "px, " + this._z + ") " +
+            "scale(" + this._scale + ") " +
+            "rotate(" + this._rotation + "deg)";
     },
 
     addGestureRecognizer: function(recognizer) {
