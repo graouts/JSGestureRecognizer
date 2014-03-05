@@ -10,16 +10,14 @@
             PinchGestureRecognizer = require("gesture-recognizer/pinch"),
             GestureView            = require("gesture-recognizer/view");
 
-        var startScale = 1,
-            scale = 1;
+        var scale = 1;
 
         var recognizer = new PinchGestureRecognizer;
         recognizer.addEventListener("statechange", function(event) {
-            if (recognizer.state === GestureRecognizer.States.Began)
-                startScale = scale;
-            else if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state == GestureRecognizer.States.Changed) {
-                scale = startScale * recognizer.scale;
+            if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state == GestureRecognizer.States.Changed) {
+                scale *= recognizer.scale;
                 recognizer.view.transform = { scale: scale };
+                recognizer.scale = 1;
             }
         });
 
