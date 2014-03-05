@@ -6,6 +6,7 @@ var GestureRecognizer = require("./gesture-recognizer"),
 
 function SwipeGestureRecognizer()
 {
+    // FIXME: expose a way to detect which direction the swipe was recognized.
     this.numberOfTouchesRequired = 1;
     this.direction = SwipeGestureRecognizer.Directions.Right;
 

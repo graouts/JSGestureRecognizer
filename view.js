@@ -8,7 +8,7 @@ function GestureView(elementOrId)
     this.element = (typeof elementOrId == 'string') ? document.getElementById(elementOrId) : elementOrId;
     this.scale = 1;
     this.rotation = this.x = this.y = this.z = 0;
-    this.transform = {}; // forces mobile safari to set object as accelerated.
+    this.transform = {};
 };
 
 GestureView.prototype = {
