@@ -6,13 +6,14 @@
     <script type="text/javascript" src="../build/build.js" charset="utf-8"></script>
     <script type="text/javascript" charset="utf-8">
 
-        var GestureRecognizer         = require("gesture-recognizer"),
-            TapGestureRecognizer      = require("gesture-recognizer/tap"),
-            PanGestureRecognizer      = require("gesture-recognizer/pan"),
-            PinchGestureRecognizer    = require("gesture-recognizer/pinch"),
-            RotationGestureRecognizer = require("gesture-recognizer/rotation"),
-            GestureView               = require("gesture-recognizer/view"),
-            Point                     = require("geometry").Point;
+        var GestureRecognizer          = require("gesture-recognizer"),
+            TapGestureRecognizer       = require("gesture-recognizer/tap"),
+            PanGestureRecognizer       = require("gesture-recognizer/pan"),
+            PinchGestureRecognizer     = require("gesture-recognizer/pinch"),
+            RotationGestureRecognizer  = require("gesture-recognizer/rotation"),
+            LongPressGestureRecognizer = require("gesture-recognizer/long-press"),
+            GestureView                = require("gesture-recognizer/view"),
+            Point                      = require("geometry").Point;
 
         var tapRecognizer = new TapGestureRecognizer;
         tapRecognizer.numberOfTapsRequired = 3;
@@ -53,12 +54,20 @@
             }
         });
 
+        var longPressRecognizer = new LongPressGestureRecognizer;
+        longPressRecognizer.maximumNumberOfTouches = 1;
+        longPressRecognizer.addEventListener("statechange", function(event) {
+            if (longPressRecognizer.state === GestureRecognizer.States.Recognized)
+                alert("Long press!");
+        });
+
         window.addEventListener("DOMContentLoaded", function() {
             var view = new GestureView("target");
             view.addGestureRecognizer(tapRecognizer);
             view.addGestureRecognizer(panRecognizer);
             view.addGestureRecognizer(pinchRecognizer);
             view.addGestureRecognizer(rotationRecognizer);
+            view.addGestureRecognizer(longPressRecognizer);
         });
 
     </script>
