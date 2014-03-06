@@ -6,7 +6,6 @@ var GestureRecognizer = require("./gesture-recognizer"),
 
 function PanGestureRecognizer()
 {
-    console.log("PanGestureRecognizer");
     this.minimumNumberOfTouches = 1;
     this.maximumNumberOfTouches = 100000;
 
