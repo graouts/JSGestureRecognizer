@@ -106,7 +106,7 @@ GestureRecognizer.prototype = {
     
     touchesBegan: function(event)
     {
-        if (event.target !== this._target)
+        if (event.currentTarget !== this._target)
             return;
 
         // FIXME: deal with touchcancel as well.
@@ -127,7 +127,7 @@ GestureRecognizer.prototype = {
 
     gestureBegan: function(event)
     {
-        if (event.target !== this._target)
+        if (event.currentTarget !== this._target)
             return;
 
         window.addEventListener(GestureRecognizer.Events.GestureChange, this, true);
@@ -142,8 +142,7 @@ GestureRecognizer.prototype = {
 
     gestureEnded: function(event)
     {
-        if (event.target === this._target)
-            this.enterEndedState();
+        this.enterEndedState();
     },
 
     // State changes

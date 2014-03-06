@@ -14,7 +14,7 @@ RotationGestureRecognizer.prototype = {
 
     touchesBegan: function(event)
     {
-        if (event.target !== this.target || event.targetTouches !== 2)
+        if (event.currentTarget !== this.target || event.targetTouches !== 2)
             return;
 
         event.preventDefault();
@@ -32,9 +32,6 @@ RotationGestureRecognizer.prototype = {
     
     gestureChanged: function(event)
     {
-        if (event.target !== this.target)
-            return;
-
         event.preventDefault();
 
         this.enterChangedState();

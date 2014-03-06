@@ -22,7 +22,7 @@ TapGestureRecognizer.prototype = {
 
     touchesBegan: function(event)
     {
-        if (event.target !== this.target)
+        if (event.currentTarget !== this.target)
             return;
 
         GestureRecognizer.prototype.touchesBegan.call(this, event);
@@ -38,7 +38,7 @@ TapGestureRecognizer.prototype = {
 
     touchesMoved: function(event)
     {
-        if (event.target === this.target && !GestureRecognizer.SupportsTouches) {
+        if (!GestureRecognizer.SupportsTouches) {
             event.preventDefault();
             this.enterFailedState();
         }
@@ -53,9 +53,6 @@ TapGestureRecognizer.prototype = {
 
     touchesEnded: function(event)
     {
-        if (event.target !== this.target)
-            return;
-
         if (this.numberOfTouches === this.numberOfTouchesRequired) {
             GestureRecognizer.prototype.touchesEnded.call(this, event);
 

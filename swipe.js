@@ -27,7 +27,7 @@ SwipeGestureRecognizer.prototype = {
     
     touchesBegan: function(event)
     {
-        if (event.target !== this.target)
+        if (event.currentTarget !== this.target)
             return;
 
         var touches = event.targetTouches;
@@ -43,7 +43,7 @@ SwipeGestureRecognizer.prototype = {
     touchesMoved: function(event)
     {
         var touches = event.targetTouches;
-        if (event.target !== this.target || this.numberOfTouchesRequired !== touches.length) {
+        if (this.numberOfTouchesRequired !== touches.length) {
             this.enterFailedState();
             return;
         }
@@ -77,7 +77,6 @@ SwipeGestureRecognizer.prototype = {
     
     touchesEnded: function(event)
     {
-        if (event.target === this.target)
-            this.enterFailedState();
+        this.enterFailedState();
     }
 };

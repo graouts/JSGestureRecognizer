@@ -18,7 +18,7 @@ LongPressGestureRecognizer.prototype = {
 
     touchesBegan: function(event)
     {
-        if (event.target !== this.target)
+        if (event.currentTarget !== this.target)
             return;
 
         event.preventDefault();
@@ -31,18 +31,14 @@ LongPressGestureRecognizer.prototype = {
     
     touchesMoved: function(event)
     {
-        if (event.target === this.target && GestureRecognizer.SupportsTouches) {
-            event.preventDefault();
-            this.enterFailedState();
-        }
+        event.preventDefault();
+        this.enterFailedState();
     },
     
     touchesEnded: function(event)
     {
-        if (event.target === this.target) {
-            event.preventDefault();
-            this.enterFailedState();
-        }
+        event.preventDefault();
+        this.enterFailedState();
     },
     
     reset: function()

@@ -6,6 +6,7 @@ var GestureRecognizer = require("./gesture-recognizer"),
 
 function PanGestureRecognizer()
 {
+    console.log("PanGestureRecognizer");
     this.minimumNumberOfTouches = 1;
     this.maximumNumberOfTouches = 100000;
 
@@ -18,7 +19,7 @@ PanGestureRecognizer.prototype = {
 
     touchesBegan: function(event)
     {
-        if (event.target !== this.target)
+        if (event.currentTarget !== this.target)
             return;
 
         GestureRecognizer.prototype.touchesBegan.call(this, event);
@@ -33,13 +34,6 @@ PanGestureRecognizer.prototype = {
         var touches = event.targetTouches;
         if (touches.length < this.minimumNumberOfTouches || touches.length > this.maximumNumberOfTouches)
             return;
-
-        if (GestureRecognizer.SupportsTouches) {
-            if (event.target !== this.target) {
-                this.touchesEnded(event);
-                return;
-            }
-        }
 
         event.preventDefault();
 
@@ -111,13 +105,10 @@ PanGestureRecognizer.prototype = {
     
     touchesEnded: function(event)
     {
-        if (event.target === this.target || !GestureRecognizer.SupportsTouches) {
-            GestureRecognizer.prototype.touchesEnded.call(this, event);
-            if (this.beganRecognizer)
-                this.enterEndedState();
-            else
-                this.enterFailedState();
-        }
+        if (this._gestures.length > 0)
+            this.enterEndedState();
+        else
+            this.enterFailedState();
     },
     
     reset: function()
