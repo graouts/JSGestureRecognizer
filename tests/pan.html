@@ -16,7 +16,7 @@
         var recognizer = new PanGestureRecognizer;
         recognizer.maximumNumberOfTouches = 1;
         recognizer.addEventListener("statechange", function(event) {
-            if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state == GestureRecognizer.States.Changed) {
+            if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state === GestureRecognizer.States.Changed) {
                 translation.x += recognizer.translation.x;
                 translation.y += recognizer.translation.y;
                 recognizer.view.transform = translation;

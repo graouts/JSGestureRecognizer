@@ -97,7 +97,7 @@ var translation = new Point;
 var recognizer = new PanGestureRecognizer;
 recognizer.maximumNumberOfTouches = 1;
 recognizer.addEventListener("statechange", function(event) {
-    if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state == GestureRecognizer.States.Changed) {
+    if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state === GestureRecognizer.States.Changed) {
         translation.x += recognizer.translation.x;
         translation.y += recognizer.translation.y;
         recognizer.view.transform = translation;
@@ -123,7 +123,7 @@ var scale = 1;
 
 var recognizer = new PinchGestureRecognizer;
 recognizer.addEventListener("statechange", function(event) {
-    if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state == GestureRecognizer.States.Changed) {
+    if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state === GestureRecognizer.States.Changed) {
         scale *= recognizer.scale;
         recognizer.view.transform = { scale: scale };
         recognizer.scale = 1;
@@ -148,7 +148,7 @@ var rotation = 0;
 
 var recognizer = new RotationGestureRecognizer;
 recognizer.addEventListener("statechange", function(event) {
-    if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state == GestureRecognizer.States.Changed) {
+    if (recognizer.state === GestureRecognizer.States.Ended || recognizer.state === GestureRecognizer.States.Changed) {
         rotation += recognizer.rotation;
         recognizer.view.transform = { rotation: rotation };
         recognizer.rotation = 0;

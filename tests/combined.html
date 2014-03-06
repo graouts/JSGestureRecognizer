@@ -26,7 +26,7 @@
         var panRecognizer = new PanGestureRecognizer;
         panRecognizer.maximumNumberOfTouches = 1;
         panRecognizer.addEventListener("statechange", function(event) {
-            if (panRecognizer.state === GestureRecognizer.States.Ended || panRecognizer.state == GestureRecognizer.States.Changed) {
+            if (panRecognizer.state === GestureRecognizer.States.Ended || panRecognizer.state === GestureRecognizer.States.Changed) {
                 translation.x += panRecognizer.translation.x;
                 translation.y += panRecognizer.translation.y;
                 panRecognizer.view.transform = translation;
@@ -37,7 +37,7 @@
         var scale = 1;
         var pinchRecognizer = new PinchGestureRecognizer;
         pinchRecognizer.addEventListener("statechange", function(event) {
-            if (pinchRecognizer.state === GestureRecognizer.States.Ended || pinchRecognizer.state == GestureRecognizer.States.Changed) {
+            if (pinchRecognizer.state === GestureRecognizer.States.Ended || pinchRecognizer.state === GestureRecognizer.States.Changed) {
                 scale *= pinchRecognizer.scale;
                 pinchRecognizer.view.transform = { scale: scale };
                 pinchRecognizer.scale = 1;
@@ -47,7 +47,7 @@
         var rotation = 0;
         var rotationRecognizer = new RotationGestureRecognizer;
         rotationRecognizer.addEventListener("statechange", function(event) {
-            if (rotationRecognizer.state === GestureRecognizer.States.Ended || rotationRecognizer.state == GestureRecognizer.States.Changed) {
+            if (rotationRecognizer.state === GestureRecognizer.States.Ended || rotationRecognizer.state === GestureRecognizer.States.Changed) {
                 rotation += rotationRecognizer.rotation;
                 rotationRecognizer.view.transform = { rotation: rotation };
                 rotationRecognizer.rotation = 0;
