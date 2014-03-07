@@ -6,7 +6,6 @@ var GestureRecognizer = require("./gesture-recognizer"),
 
 function SwipeGestureRecognizer()
 {
-    // FIXME: expose a way to detect which direction the swipe was recognized.
     this.numberOfTouchesRequired = 1;
     this.direction = SwipeGestureRecognizer.Directions.Right;
 
@@ -54,22 +53,22 @@ SwipeGestureRecognizer.prototype = {
         this.distance.x = touches[0].pageX - this.startingPos.x;
         this.distance.y = touches[0].pageY - this.startingPos.y;
         
-        if (this.state !== GestureRecognizer.States.Recognized && this.direction & SwipeGestureRecognizer.Directions.Right) {
+        if (this.state !== GestureRecognizer.States.Recognized && this.direction === SwipeGestureRecognizer.Directions.Right) {
             if (this.distance.x > SwipeGestureRecognizer.MinimumDistance)
                 this.enterRecognizedState();
         }
         
-        if (this.state !== GestureRecognizer.States.Recognized && this.direction & SwipeGestureRecognizer.Directions.Left) {
+        if (this.state !== GestureRecognizer.States.Recognized && this.direction === SwipeGestureRecognizer.Directions.Left) {
             if (this.distance.x < -SwipeGestureRecognizer.MinimumDistance)
                 this.enterRecognizedState();
         }
         
-        if (this.state !== GestureRecognizer.States.Recognized && this.direction & SwipeGestureRecognizer.Directions.Up) {
+        if (this.state !== GestureRecognizer.States.Recognized && this.direction === SwipeGestureRecognizer.Directions.Up) {
             if (this.distance.y < -SwipeGestureRecognizer.MinimumDistance)
                 this.enterRecognizedState();
         }
         
-        if (this.state !== GestureRecognizer.States.Recognized && this.direction & SwipeGestureRecognizer.Directions.Down) {
+        if (this.state !== GestureRecognizer.States.Recognized && this.direction === SwipeGestureRecognizer.Directions.Down) {
             if (this.distance.y > SwipeGestureRecognizer.MinimumDistance)
                 this.enterRecognizedState();
         }

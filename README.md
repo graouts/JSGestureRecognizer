@@ -66,14 +66,14 @@ GestureRecognizer.addGestureRecognizer(someElement, recognizer);
 
 ### SwipeGestureRecognizer
 
-This gesture recognizer allows you to identify a linear swipe gesture. You can customize the allowed `direction` for the swipe as a bit-mask as well as the number of fingers used for the swipe with `numberOfTouchesRequired`. 
+This gesture recognizer allows you to identify a linear swipe gesture. You can customize the allowed `direction` for the swipe as well as the number of fingers used for the swipe with `numberOfTouchesRequired`. 
 
 ```javascript
 var GestureRecognizer      = require("gesture-recognizer"),
     SwipeGestureRecognizer = require("gesture-recognizer/swipe");
 
 var recognizer = new SwipeGestureRecognizer;
-recognizer.direction = SwipeGestureRecognizer.Directions.Right | SwipeGestureRecognizer.Directions.Left;
+recognizer.direction = SwipeGestureRecognizer.Directions.Right;
 recognizer.addEventListener("statechange", function(event) {
     if (recognizer.state === GestureRecognizer.States.Recognized)
         console.log("Swiped");

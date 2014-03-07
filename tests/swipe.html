@@ -11,7 +11,7 @@
             GestureView            = require("gesture-recognizer/view");
 
         var recognizer = new SwipeGestureRecognizer;
-        recognizer.direction = SwipeGestureRecognizer.Directions.Right | SwipeGestureRecognizer.Directions.Left;
+        recognizer.direction = SwipeGestureRecognizer.Directions.Right;
         recognizer.addEventListener("statechange", function(event) {
             if (recognizer.state === GestureRecognizer.States.Recognized)
                 alert("Swiped");
