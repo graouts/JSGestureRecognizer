@@ -8,13 +8,15 @@ function PinchGestureRecognizer()
     GestureRecognizer.call(this);
 }
 
+PinchGestureRecognizer.MaximumTimeForRecordingGestures = 100;
+
 PinchGestureRecognizer.prototype = {
     constructor: PinchGestureRecognizer,
     __proto__: GestureRecognizer.prototype,
 
     touchesBegan: function(event)
     {
-        if (event.currentTarget !== this.target || event.targetTouches !== 2)
+        if (event.currentTarget !== this.target || this.numberOfTouches !== 2)
             return;
 
         event.preventDefault();
@@ -46,6 +48,11 @@ PinchGestureRecognizer.prototype = {
         this.scale *= event.scale / this._gestures[this._gestures.length - 2].scale;
     },
     
+    gestureEnded: function(event)
+    {
+        this.enterEndedState();
+    },
+    
     reset: function()
     {
         this.scale = 1;
@@ -70,7 +77,8 @@ PinchGestureRecognizer.prototype = {
         var scaleDirection = this._gestures[count - 1].scale >= this._gestures[count - 2].scale;
         for (var i = count - 3; i >= 0; --i) {
             var gesture = this._gestures[i];
-            if (currentTime - gesture.timeStamp > 1000 || this._gestures[i + 1].scale >= gesture.scale !== scaleDirection)
+            if (currentTime - gesture.timeStamp > PinchGestureRecognizer.MaximumTimeForRecordingGestures ||
+                this._gestures[i + 1].scale >= gesture.scale !== scaleDirection)
                 break;
         }
 

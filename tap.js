@@ -27,9 +27,12 @@ TapGestureRecognizer.prototype = {
 
         GestureRecognizer.prototype.touchesBegan.call(this, event);
 
-        this.numberOfTouches = event.targetTouches.length;
-        this.translationOrigin = Point.fromEvent(event);
-        this.distance = 0;
+        if (this.numberOfTouches !== this.numberOfTouchesRequired) {
+            this.enterFailedState();
+            return;
+        }
+
+        this._startPoint = this.locationInElement();
 
         this._rewindTimer(TapGestureRecognizer.WaitingForTapCompletionTimeout);
 
@@ -41,31 +44,23 @@ TapGestureRecognizer.prototype = {
         if (!GestureRecognizer.SupportsTouches) {
             event.preventDefault();
             this.enterFailedState();
+            return;
         }
 
-        var p = Point.fromEvent(event);
-        var dx = p.x - this.translationOrigin.x,
-            dy = p.y - this.translationOrigin.y;
-        this.distance += Math.sqrt(dx*dx + dy*dy);
-        if (this.distance > TapGestureRecognizer.MoveTolerance)
+        if (this._startPoint.distanceToPoint(this.locationInElement()) > TapGestureRecognizer.MoveTolerance)
             this.enterFailedState();
     },
 
     touchesEnded: function(event)
     {
-        if (this.numberOfTouches === this.numberOfTouchesRequired) {
-            GestureRecognizer.prototype.touchesEnded.call(this, event);
+        this._taps++;
 
-            this._taps++;
+        if (this._taps === this.numberOfTapsRequired) {
+            this.enterRecognizedState();
+            this.reset();
+        }
 
-            if (this._taps === this.numberOfTapsRequired) {
-                this.enterRecognizedState();
-                this.reset();
-            }
-
-            this._rewindTimer(TapGestureRecognizer.WaitingForNextTapToStartTimeout);
-        } else
-            this.enterFailedState();
+        this._rewindTimer(TapGestureRecognizer.WaitingForNextTapToStartTimeout);
     },
 
     reset: function()

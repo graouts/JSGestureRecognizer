@@ -24,7 +24,7 @@
 
         var translation = new Point;
         var panRecognizer = new PanGestureRecognizer;
-        panRecognizer.maximumNumberOfTouches = 1;
+        panRecognizer.maximumNumberOfTouches = 2;
         panRecognizer.addEventListener("statechange", function(event) {
             if (panRecognizer.state === GestureRecognizer.States.Ended || panRecognizer.state === GestureRecognizer.States.Changed) {
                 translation.x += panRecognizer.translation.x;

@@ -8,6 +8,8 @@ function GestureRecognizer()
 {
     DOM.EventTarget.call(this);
 
+    this._targetTouches = [];
+
     this._target = null;
     this.view = null;
     this.state = GestureRecognizer.States.Possible;
@@ -29,6 +31,7 @@ GestureRecognizer.Events = {
     TouchStart     : GestureRecognizer.SupportsTouches ? "touchstart" : "mousedown",
     TouchMove      : GestureRecognizer.SupportsTouches ? "touchmove" : "mousemove",
     TouchEnd       : GestureRecognizer.SupportsTouches ? "touchend" : "mouseup",
+    TouchCancel    : "touchcancel",
     GestureStart   : "gesturestart",
     GestureChange  : "gesturechange",
     GestureEnd     : "gestureend",
@@ -50,34 +53,72 @@ GestureRecognizer.prototype = {
             return;
 
         this._target = target;
-        this.initRecognizer();
+        this._initRecognizer();
     },
 
-    initRecognizer: function()
+    get numberOfTouches()
     {
-        if (this._target === null)
-            throw new Error("Failed to initialize gesture recognizer, `this.target` is `null` but must be a DOM element.");
+        return this._targetTouches.length;
+    },
 
-        this.reset();
-        this.state = GestureRecognizer.States.Possible;
+    get enabled()
+    {
+        return this._enabled;
+    },
 
-        this._target.addEventListener(GestureRecognizer.Events.TouchStart, this);
-        if (GestureRecognizer.SupportsTouches)
-            this._target.addEventListener(GestureRecognizer.Events.GestureStart, this);
+    set enabled(enabled)
+    {
+        if (this._enabled === enabled)
+            return;
+
+        this._enabled = enabled;
+        if (!enabled && this.numberOfTouches > 0)
+            this.enterCancelledState();
     },
 
     reset: function()
     {
-        // …
+        // Implemented by subclasses.
+    },
+
+    locationInElement: function(element)
+    {
+        var p = new Point;
+        var touches = this._targetTouches;
+        for (var i = 0, count = touches.length; i < count; ++i) {
+            var touch = touches[i];
+            p.x += touch.pageX;
+            p.y += touch.pageY;
+        }
+        p.x /= count;
+        p.y /= count;
+
+        if (!element)
+            return p;
+
+        var wkPoint = window.webkitConvertPointFromPageToNode(element, new WebKitPoint(p.x, p.y));
+        return new Point(wkPoint.x, wkPoint.y);
+    },
+
+    locationOfTouchInElement: function(touchIndex, element)
+    {
+        var touch = this._targetTouches[touchIndex];
+        if (!touch)
+            return new Point;
+
+        if (!element)
+            return new Point(touch.pageX, touch.pageY);
+
+        var wkPoint = window.webkitConvertPointFromPageToNode(element, new WebKitPoint(touch.pageX, touch.pageY));
+        return new Point(wkPoint.x, wkPoint.y);
     },
 
     // Touch and gesture event handling
 
     handleEvent: function(event)
     {
-        if (!GestureRecognizer.SupportsTouches)
-            event.targetTouches = [event];
-            
+        this._updateTargetTouches(event);
+
         switch (event.type) {
         case GestureRecognizer.Events.TouchStart:
             this.touchesBegan(event);
@@ -87,6 +128,9 @@ GestureRecognizer.prototype = {
             break;
         case GestureRecognizer.Events.TouchEnd:
             this.touchesEnded(event);
+            break;
+        case GestureRecognizer.Events.TouchCancel:
+            this.touchesCancelled(event);
             break;
         case GestureRecognizer.Events.GestureStart:
             this.gestureBegan(event);
@@ -105,20 +149,25 @@ GestureRecognizer.prototype = {
         if (event.currentTarget !== this._target)
             return;
 
-        // FIXME: deal with touchcancel as well.
         window.addEventListener(GestureRecognizer.Events.TouchMove, this, true);
         window.addEventListener(GestureRecognizer.Events.TouchEnd, this, true);
+        window.addEventListener(GestureRecognizer.Events.TouchCancel, this, true);
         this.enterPossibleState();
     },
     
     touchesMoved: function(event)
     {
-        // …
+        // Implemented by subclasses.
     },
 
     touchesEnded: function(event)
     {
-        // …
+        // Implemented by subclasses.
+    },
+
+    touchesCancelled: function(event)
+    {
+        // Implemented by subclasses.
     },
 
     gestureBegan: function(event)
@@ -133,12 +182,12 @@ GestureRecognizer.prototype = {
 
     gestureChanged: function(event)
     {
-        // …
+        // Implemented by subclasses.
     },
 
     gestureEnded: function(event)
     {
-        this.enterEndedState();
+        // Implemented by subclasses.
     },
 
     // State changes
@@ -186,6 +235,19 @@ GestureRecognizer.prototype = {
 
     // Private
 
+    _initRecognizer: function()
+    {
+        if (this._target === null)
+            throw new Error("Failed to initialize gesture recognizer, `this.target` is `null` but must be a DOM element.");
+
+        this.reset();
+        this.state = GestureRecognizer.States.Possible;
+
+        this._target.addEventListener(GestureRecognizer.Events.TouchStart, this);
+        if (GestureRecognizer.SupportsTouches)
+            this._target.addEventListener(GestureRecognizer.Events.GestureStart, this);
+    },
+
     _removeObservers: function()
     {
         window.removeEventListener(GestureRecognizer.Events.TouchMove, this, true);
@@ -198,5 +260,58 @@ GestureRecognizer.prototype = {
     {
         this.state = state;
         this.dispatchEvent(new DOM.Event(GestureRecognizer.Events.StateChange));
+    },
+
+    _updateTargetTouches: function(event)
+    {
+        if (!GestureRecognizer.SupportsTouches) {
+            if (event.type === GestureRecognizer.Events.TouchEnd)
+                this._targetTouches = [];
+            else
+                this._targetTouches = [event]
+            return;
+        }
+
+        if (!(event instanceof TouchEvent))
+            return;
+
+        // With a touchstart event, event.targetTouches is accurate so 
+        // we simply add all of those.
+        if (event.type === GestureRecognizer.Events.TouchStart) {
+            this._targetTouches = [];
+            var touches = event.targetTouches;
+            for (var i = 0, count = touches.length; i < count; ++i)
+                this._targetTouches.push(touches[i]);
+            return;
+        }
+
+        // With a touchmove event, the target is window so event.targetTouches is
+        // inaccurate so we add all touches that we knew about previously.
+        if (event.type === GestureRecognizer.Events.TouchMove) {
+            var targetIdentifiers = this._targetTouches.map(function(touch) {
+                return touch.identifier;
+            });
+
+            this._targetTouches = [];
+            var touches = event.touches;
+            for (var i = 0, count = touches.length; i < count; ++i) {
+                var touch = touches[i];
+                if (targetIdentifiers.indexOf(touch.identifier) !== -1)
+                    this._targetTouches.push(touch);
+            }
+            return;
+        }
+
+        // With a touchend or touchcancel event, we only keep the existing touches
+        // that are also found in event.touches.
+        var allTouches = event.touches;
+        var existingIdentifiers = [];
+        for (var i = 0, count = allTouches.length; i < count; ++i)
+            existingIdentifiers.push(allTouches[i].identifier);
+
+        this._targetTouches = this._targetTouches.filter(function(touch) {
+            return existingIdentifiers.indexOf(touch.identifier) !== -1;
+        });
+        
     }
 };

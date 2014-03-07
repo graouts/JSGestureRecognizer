@@ -9,8 +9,13 @@ function PanGestureRecognizer()
     this.minimumNumberOfTouches = 1;
     this.maximumNumberOfTouches = 100000;
 
+    this._travelledMinimumDistance = false;
+
     GestureRecognizer.call(this);
 }
+
+PanGestureRecognizer.MinimumDistance = 10;
+PanGestureRecognizer.MaximumTimeForRecordingGestures = 100;
 
 PanGestureRecognizer.prototype = {
     constructor: PanGestureRecognizer,
@@ -23,26 +28,26 @@ PanGestureRecognizer.prototype = {
 
         GestureRecognizer.prototype.touchesBegan.call(this, event);
 
-        var touches = event.targetTouches;
-        if (touches.length < this.minimumNumberOfTouches || touches.length > this.maximumNumberOfTouches)
+        if (!this._numberOfTouchesIsAllowed())
             this.enterFailedState();
     },
     
     touchesMoved: function(event)
     {
-        var touches = event.targetTouches;
-        if (touches.length < this.minimumNumberOfTouches || touches.length > this.maximumNumberOfTouches)
-            return;
-
         event.preventDefault();
 
-        var p = Point.fromEvent(event);
+        var location = this.locationInElement();
+
         var currentTime = event.timeStamp;
-        this._recordGesture(p, currentTime);
+        this._recordGesture(location, currentTime);
 
         if (this._gestures.length === 1) {
             this.enterBeganState();
-            this._translationOrigin = p;
+            this._translationOrigin = location;
+            this._travelledMinimumDistance = false;
+        } else if (!this._travelledMinimumDistance) {
+            if (location.distanceToPoint(this._translationOrigin) >= PanGestureRecognizer.MinimumDistance)
+                this._travelledMinimumDistance = true;
         } else {
             this.enterChangedState();
 
@@ -52,11 +57,11 @@ PanGestureRecognizer.prototype = {
             var currentGesture = this._gestures[this._gestures.length - 1];
             var previousGesture = this._gestures[this._gestures.length - 2];
 
-            var txDirection = currentGesture.translation.x >= previousGesture.translation.x;
-            var tyDirection = currentGesture.translation.y >= previousGesture.translation.y;
+            var txDirection = currentGesture.location.x >= previousGesture.location.x;
+            var tyDirection = currentGesture.location.y >= previousGesture.location.y;
             for (var i = this._gestures.length - 3; i >= 0; --i) {
                 var gesture = this._gestures[i];
-                if (currentTime - gesture.timeStamp) {
+                if (currentTime - gesture.timeStamp > PanGestureRecognizer.MaximumTimeForRecordingGestures) {
                     if (sliceIndexX === 0)
                         sliceIndexX = i + 1;
                     if (sliceIndexY === 0)
@@ -64,11 +69,11 @@ PanGestureRecognizer.prototype = {
                     break;
                 }
                 
-                var nextTranslation = this._gestures[i + 1].translation;
+                var nextTranslation = this._gestures[i + 1].location;
                 
-                if (nextTranslation.x >= gesture.translation.x !== txDirection)
+                if (nextTranslation.x >= gesture.location.x !== txDirection)
                     sliceIndexX = i + 1;
-                if (nextTranslation.y >= gesture.translation.y !== tyDirection)
+                if (nextTranslation.y >= gesture.location.y !== tyDirection)
                     sliceIndexY = i + 1;
                 
                 if (sliceIndexX > 0 && sliceIndexY > 0) 
@@ -89,22 +94,25 @@ PanGestureRecognizer.prototype = {
 
             var oldestGestureX = xGestures[0];
             var xdt = currentTime - oldestGestureX.timeStamp;
-            var dx = p.x - oldestGestureX.translation.x;
+            var dx = location.x - oldestGestureX.location.x;
             this.velocity.x = dx / xdt * 1000;
 
             var oldestGestureY = yGestures[0];
             var ydt = currentTime - oldestGestureY.timeStamp;
-            var dy = p.y - oldestGestureY.translation.y;
+            var dy = location.y - oldestGestureY.location.y;
             this.velocity.y = dy / ydt * 1000;
             
-            this.translation.x += p.x - previousGesture.translation.x;
-            this.translation.y += p.y - previousGesture.translation.y;
+            this.translation.x += location.x - previousGesture.location.x;
+            this.translation.y += location.y - previousGesture.location.y;
         }
     },
     
     touchesEnded: function(event)
     {
-        if (this._gestures.length > 0)
+        if (this._numberOfTouchesIsAllowed())
+            return;
+
+        if (this._travelledMinimumDistance)
             this.enterEndedState();
         else
             this.enterFailedState();
@@ -119,11 +127,16 @@ PanGestureRecognizer.prototype = {
     
     // Private
     
-    _recordGesture: function(translation, timeStamp)
+    _recordGesture: function(location, timeStamp)
     {
         this._gestures.push({
-            translation: translation,
+            location: location,
             timeStamp: timeStamp
         });
+    },
+    
+    _numberOfTouchesIsAllowed: function()
+    {
+        return this.numberOfTouches >= this.minimumNumberOfTouches && this.numberOfTouches <= this.maximumNumberOfTouches;
     }
 };

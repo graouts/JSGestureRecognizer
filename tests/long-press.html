@@ -11,7 +11,6 @@
             GestureView                = require("gesture-recognizer/view");
 
         var recognizer = new LongPressGestureRecognizer;
-        recognizer.maximumNumberOfTouches = 1;
         recognizer.addEventListener("statechange", function(event) {
             if (event.target.state === GestureRecognizer.States.Recognized)
                 alert("Long press!");

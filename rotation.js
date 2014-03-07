@@ -8,13 +8,15 @@ function RotationGestureRecognizer()
     GestureRecognizer.call(this);
 }
 
+RotationGestureRecognizer.MaximumTimeForRecordingGestures = 100;
+
 RotationGestureRecognizer.prototype = {
     constructor: RotationGestureRecognizer,
     __proto__: GestureRecognizer.prototype,
 
     touchesBegan: function(event)
     {
-        if (event.currentTarget !== this.target || event.targetTouches !== 2)
+        if (event.currentTarget !== this.target || this.numberOfTouches !== 2)
             return;
 
         event.preventDefault();
@@ -46,6 +48,11 @@ RotationGestureRecognizer.prototype = {
         this.rotation += event.rotation - this._gestures[this._gestures.length - 2].rotation;
     },
     
+    gestureEnded: function(event)
+    {
+        this.enterEndedState();
+    },
+    
     reset: function()
     {
         this.rotation = 0;
@@ -70,7 +77,8 @@ RotationGestureRecognizer.prototype = {
         var rotationDirection = this._gestures[count - 1].rotation >= this._gestures[count - 2].rotation;
         for (var i = count - 3; i >= 0; --i) {
             var gesture = this._gestures[i];
-            if (currentTime - gesture.timeStamp > 1000 || this._gestures[i + 1].rotation >= gesture.rotation !== rotationDirection)
+            if (currentTime - gesture.timeStamp > RotationGestureRecognizer.MaximumTimeForRecordingGestures ||
+                this._gestures[i + 1].rotation >= gesture.rotation !== rotationDirection)
                 break;
         }
 

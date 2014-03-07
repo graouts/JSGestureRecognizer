@@ -5,7 +5,8 @@ var GestureRecognizer = require("./gesture-recognizer");
 
 function LongPressGestureRecognizer()
 {
-    // FIXME: implement and expose .allowableMovement and .numberOfTapsRequired
+    // FIXME: implement .numberOfTapsRequired
+    this.allowableMovement = 10;
     this.minimumPressDuration = 500;
     this.numberOfTouchesRequired = 1;
 
@@ -25,27 +26,35 @@ LongPressGestureRecognizer.prototype = {
 
         GestureRecognizer.prototype.touchesBegan.call(this, event);
 
-        if (this.numberOfTouchesRequired === event.targetTouches.length)
-            this._timerId = window.setTimeout(this.enterRecognizedState.bind(this), this.minimumPressDuration);
+        if (this.numberOfTouches !== this.numberOfTouchesRequired) {
+            this.enterFailedState();
+            return;
+        }
+
+        this._startPoint = this.locationInElement();
+
+        this._timerId = window.setTimeout(this.enterRecognizedState.bind(this), this.minimumPressDuration);
     },
     
     touchesMoved: function(event)
     {
         event.preventDefault();
-        this.enterFailedState();
+
+        if (this._startPoint.distanceToPoint(this.locationInElement()) > this.allowableMovement)
+            this.enterFailedState();
     },
     
     touchesEnded: function(event)
     {
         event.preventDefault();
-        this.enterFailedState();
+
+        if (this.numberOfTouches !== this.numberOfTouchesRequired)
+            this.enterFailedState();
     },
     
     reset: function()
     {
-        if (this._timerId) {
-            window.clearTimeout(this._timerId);
-        }
+        window.clearTimeout(this._timerId);
         delete this._timerId;
     }
 };
