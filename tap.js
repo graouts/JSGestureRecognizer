@@ -32,7 +32,7 @@ TapGestureRecognizer.prototype = {
             return;
         }
 
-        this._startPoint = this.locationInElement();
+        this._startPoint = GestureRecognizer.prototype.locationInElement.call(this);
 
         this._rewindTimer(TapGestureRecognizer.WaitingForTapCompletionTimeout);
 
@@ -67,6 +67,17 @@ TapGestureRecognizer.prototype = {
     {
         this._taps = 0;
         this._clearTimer();
+    },
+
+    locationInElement: function(element)
+    {
+        var p = this._startPoint || new Point;
+
+        if (!element)
+            return p;
+
+        var wkPoint = window.webkitConvertPointFromPageToNode(element, new WebKitPoint(p.x, p.y));
+        return new Point(wkPoint.x, wkPoint.y);
     },
 
     // Private

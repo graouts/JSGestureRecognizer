@@ -14,7 +14,7 @@
         recognizer.numberOfTapsRequired = 3;
         recognizer.addEventListener("statechange", function(event) {
             if (event.target.state === GestureRecognizer.States.Recognized)
-                console.log("tapped!");
+                console.log("tapped at", recognizer.locationInElement(recognizer.target).toString());
         });
 
         window.addEventListener("DOMContentLoaded", function() {
