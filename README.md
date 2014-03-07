@@ -23,7 +23,7 @@ recognizer.addEventListener("statechange", function(event) {
 And then you typically attach it to a target DOM element:
 
 ```javascript
-GestureRecognizer.addGestureRecognizer(someElement, recognizer);
+recognizer.target = someElement;
 ```
 
 A utility class `GestureView` is also made available to wrap an element and eases setting its transform as illustrated across the examples below.
@@ -43,7 +43,7 @@ recognizer.addEventListener("statechange", function(event) {
         console.log("tapped!");
 });
 
-GestureRecognizer.addGestureRecognizer(someElement, recognizer);
+recognizer.target = someElement;
 ```
 
 ### LongPressGestureRecognizer
@@ -61,7 +61,7 @@ recognizer.addEventListener("statechange", function(event) {
         console.log("Long press!");
 });
 
-GestureRecognizer.addGestureRecognizer(someElement, recognizer);
+recognizer.target = someElement;
 ```
 
 ### SwipeGestureRecognizer
@@ -79,7 +79,7 @@ recognizer.addEventListener("statechange", function(event) {
         console.log("Swiped");
 });
 
-GestureRecognizer.addGestureRecognizer(someElement, recognizer);
+recognizer.target = someElement;
 ```
 
 ### PanGestureRecognizer

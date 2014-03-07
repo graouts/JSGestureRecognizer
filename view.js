@@ -27,7 +27,7 @@ GestureView.prototype = {
     },
 
     addGestureRecognizer: function(recognizer) {
-        GestureRecognizer.addGestureRecognizer(this.element, recognizer);
+        recognizer.target = this.element;
         recognizer.view = this;
     },
 

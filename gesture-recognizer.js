@@ -35,10 +35,6 @@ GestureRecognizer.Events = {
     StateChange    : "statechange"
 };
 
-GestureRecognizer.addGestureRecognizer = function(target, gestureRecognizer) {
-    gestureRecognizer.target = target;
-}
-
 GestureRecognizer.prototype = {
     constructor: GestureRecognizer,
     __proto__: DOM.EventTarget.prototype,
