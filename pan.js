@@ -42,12 +42,13 @@ PanGestureRecognizer.prototype = {
         this._recordGesture(location, currentTime);
 
         if (this._gestures.length === 1) {
-            this.enterBeganState();
             this._translationOrigin = location;
             this._travelledMinimumDistance = false;
         } else if (!this._travelledMinimumDistance) {
-            if (location.distanceToPoint(this._translationOrigin) >= PanGestureRecognizer.MinimumDistance)
+            if (this.canBeginWithTravelledDistance(new Point(location.x - this._translationOrigin.x, location.y - this._translationOrigin.y))) {
                 this._travelledMinimumDistance = true;
+                this.enterBeganState();
+            }
         } else {
             this.enterChangedState();
 
@@ -106,7 +107,12 @@ PanGestureRecognizer.prototype = {
             this.translation.y += location.y - previousGesture.location.y;
         }
     },
-    
+
+    canBeginWithTravelledDistance: function(distance)
+    {
+        return Math.abs(distance.x) >= PanGestureRecognizer.MinimumDistance || Math.abs(distance.y) >= PanGestureRecognizer.MinimumDistance;
+    },
+
     touchesEnded: function(event)
     {
         if (this._numberOfTouchesIsAllowed())
