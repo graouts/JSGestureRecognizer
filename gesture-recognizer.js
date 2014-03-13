@@ -10,6 +10,7 @@ function GestureRecognizer()
 
     this._targetTouches = [];
 
+    this._enabled = true;
     this._target = null;
     this.view = null;
     this.state = GestureRecognizer.States.Possible;
@@ -74,6 +75,8 @@ GestureRecognizer.prototype = {
         this._enabled = enabled;
         if (!enabled && this.numberOfTouches > 0)
             this.enterCancelledState();
+
+        this._updateBaseListeners();
     },
 
     reset: function()
@@ -205,21 +208,21 @@ GestureRecognizer.prototype = {
     enterEndedState: function()
     {
         this._setStateAndNotifyOfChange(GestureRecognizer.States.Ended);
-        this._removeObservers();
+        this._removeTrackingListeners();
         this.reset();
     },
 
     enterCancelledState: function()
     {
         this._setStateAndNotifyOfChange(GestureRecognizer.States.Cancelled);
-        this._removeObservers();
+        this._removeTrackingListeners();
         this.reset();
     },
 
     enterFailedState: function()
     {
         this._setStateAndNotifyOfChange(GestureRecognizer.States.Failed);
-        this._removeObservers();
+        this._removeTrackingListeners();
         this.reset();
     },
 
@@ -237,18 +240,29 @@ GestureRecognizer.prototype = {
 
     _initRecognizer: function()
     {
-        if (this._target === null)
-            throw new Error("Failed to initialize gesture recognizer, `this.target` is `null` but must be a DOM element.");
-
         this.reset();
         this.state = GestureRecognizer.States.Possible;
 
-        this._target.addEventListener(GestureRecognizer.Events.TouchStart, this);
-        if (GestureRecognizer.SupportsTouches)
-            this._target.addEventListener(GestureRecognizer.Events.GestureStart, this);
+        this._updateBaseListeners();
     },
 
-    _removeObservers: function()
+    _updateBaseListeners: function()
+    {
+        if (!this._target)
+            return;
+
+        if (this._enabled) {
+            this._target.addEventListener(GestureRecognizer.Events.TouchStart, this);
+            if (GestureRecognizer.SupportsTouches)
+                this._target.addEventListener(GestureRecognizer.Events.GestureStart, this);
+        } else {
+            this._target.removeEventListener(GestureRecognizer.Events.TouchStart, this);
+            if (GestureRecognizer.SupportsTouches)
+                this._target.removeEventListener(GestureRecognizer.Events.GestureStart, this);
+        }
+    },
+
+    _removeTrackingListeners: function()
     {
         window.removeEventListener(GestureRecognizer.Events.TouchMove, this, true);
         window.removeEventListener(GestureRecognizer.Events.TouchEnd, this, true);
