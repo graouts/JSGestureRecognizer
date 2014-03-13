@@ -14,6 +14,7 @@ function GestureRecognizer()
     this._target = null;
     this.view = null;
     this.state = GestureRecognizer.States.Possible;
+    this.delegate = null;
 }
 
 GestureRecognizer.SupportsTouches = "createTouch" in document;
@@ -202,6 +203,10 @@ GestureRecognizer.prototype = {
 
     enterBeganState: function()
     {
+        if (this.delegate && typeof this.delegate.gestureRecognizerShouldBegin === "function" && !this.delegate.gestureRecognizerShouldBegin(this)) {
+            this.enterFailedState();
+            return;
+        }
         this._setStateAndNotifyOfChange(GestureRecognizer.States.Began);
     },
 
