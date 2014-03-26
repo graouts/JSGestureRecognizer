@@ -21,6 +21,65 @@ PanGestureRecognizer.prototype = {
     constructor: PanGestureRecognizer,
     __proto__: GestureRecognizer.prototype,
 
+    get velocity()
+    {
+        if (this._gestures.length < 2)
+            return new Point;
+        
+        var currentTime = Date.now();
+        
+        var sliceIndexX = 0;
+        var sliceIndexY = 0;
+
+        var currentGesture = this._gestures[this._gestures.length - 1];
+        var previousGesture = this._gestures[this._gestures.length - 2];
+
+        var txDirection = currentGesture.location.x >= previousGesture.location.x;
+        var tyDirection = currentGesture.location.y >= previousGesture.location.y;
+        for (var i = this._gestures.length - 3; i >= 0; --i) {
+            var gesture = this._gestures[i];
+            if (currentTime - gesture.timeStamp > PanGestureRecognizer.MaximumTimeForRecordingGestures) {
+                if (sliceIndexX === 0)
+                    sliceIndexX = i + 1;
+                if (sliceIndexY === 0)
+                    sliceIndexY = i + 1;
+                break;
+            }
+            
+            var nextTranslation = this._gestures[i + 1].location;
+            
+            if (nextTranslation.x >= gesture.location.x !== txDirection)
+                sliceIndexX = i + 1;
+            if (nextTranslation.y >= gesture.location.y !== tyDirection)
+                sliceIndexY = i + 1;
+            
+            if (sliceIndexX > 0 && sliceIndexY > 0) 
+                break;
+        }
+
+        var xGestures = this._gestures,
+            yGestures = this._gestures;
+
+        if (sliceIndexX === sliceIndexY && sliceIndexX > 0)
+            this._gestures = this._gestures.slice(sliceIndexX);
+        else {
+            if (sliceIndexX > 0)
+                xGestures = this._gestures.slice(sliceIndexX);
+            if (sliceIndexY > 0)
+                yGestures = this._gestures.slice(sliceIndexY);
+        } 
+
+        var oldestGestureX = xGestures[0];
+        var xdt = currentTime - oldestGestureX.timeStamp;
+        var dx = currentGesture.location.x - oldestGestureX.location.x;
+
+        var oldestGestureY = yGestures[0];
+        var ydt = currentTime - oldestGestureY.timeStamp;
+        var dy = currentGesture.location.y - oldestGestureY.location.y;
+
+        return new Point(dx / xdt * 1000, dy / ydt * 1000);
+    },
+
     touchesBegan: function(event)
     {
         if (event.currentTarget !== this.target)
@@ -38,8 +97,7 @@ PanGestureRecognizer.prototype = {
 
         var location = this.locationInElement();
 
-        var currentTime = event.timeStamp;
-        this._recordGesture(location, currentTime);
+        var gesture = this._recordGesture(location);
 
         if (this._gestures.length === 1) {
             this._translationOrigin = location;
@@ -52,60 +110,11 @@ PanGestureRecognizer.prototype = {
         } else {
             this.enterChangedState();
 
-            var sliceIndexX = 0;
-            var sliceIndexY = 0;
-
-            var currentGesture = this._gestures[this._gestures.length - 1];
-            var previousGesture = this._gestures[this._gestures.length - 2];
-
-            var txDirection = currentGesture.location.x >= previousGesture.location.x;
-            var tyDirection = currentGesture.location.y >= previousGesture.location.y;
-            for (var i = this._gestures.length - 3; i >= 0; --i) {
-                var gesture = this._gestures[i];
-                if (currentTime - gesture.timeStamp > PanGestureRecognizer.MaximumTimeForRecordingGestures) {
-                    if (sliceIndexX === 0)
-                        sliceIndexX = i + 1;
-                    if (sliceIndexY === 0)
-                        sliceIndexY = i + 1;
-                    break;
-                }
-                
-                var nextTranslation = this._gestures[i + 1].location;
-                
-                if (nextTranslation.x >= gesture.location.x !== txDirection)
-                    sliceIndexX = i + 1;
-                if (nextTranslation.y >= gesture.location.y !== tyDirection)
-                    sliceIndexY = i + 1;
-                
-                if (sliceIndexX > 0 && sliceIndexY > 0) 
-                    break;
-            }
-
-            var xGestures = this._gestures,
-                yGestures = this._gestures;
-
-            if (sliceIndexX === sliceIndexY && sliceIndexX > 0)
-                this._gestures = this._gestures.slice(sliceIndexX);
-            else {
-                if (sliceIndexX > 0)
-                    xGestures = this._gestures.slice(sliceIndexX);
-                if (sliceIndexY > 0)
-                    yGestures = this._gestures.slice(sliceIndexY);
-            } 
-
-            var oldestGestureX = xGestures[0];
-            var xdt = currentTime - oldestGestureX.timeStamp;
-            var dx = location.x - oldestGestureX.location.x;
-            this.velocity.x = dx / xdt * 1000;
-
-            var oldestGestureY = yGestures[0];
-            var ydt = currentTime - oldestGestureY.timeStamp;
-            var dy = location.y - oldestGestureY.location.y;
-            this.velocity.y = dy / ydt * 1000;
-            
-            this.translation.x += location.x - previousGesture.location.x;
-            this.translation.y += location.y - previousGesture.location.y;
+            this.translation.x += location.x - this._previousGesture.location.x;
+            this.translation.y += location.y - this._previousGesture.location.y;
         }
+
+        this._previousGesture = gesture;
     },
 
     canBeginWithTravelledDistance: function(distance)
@@ -128,17 +137,19 @@ PanGestureRecognizer.prototype = {
     {
         this._gestures = [];
         this.translation = new Point;
-        this.velocity = new Point;
+        delete this._previousGesture;
     },
     
     // Private
     
-    _recordGesture: function(location, timeStamp)
+    _recordGesture: function(location)
     {
-        this._gestures.push({
+        var gesture = {
             location: location,
-            timeStamp: timeStamp
-        });
+            timeStamp: Date.now()
+        };
+        this._gestures.push(gesture);
+        return gesture;
     },
     
     _numberOfTouchesIsAllowed: function()
