@@ -74,8 +74,14 @@ GestureRecognizer.prototype = {
             return;
 
         this._enabled = enabled;
-        if (!enabled && this.numberOfTouches > 0)
-            this.enterCancelledState();
+
+        if (!enabled) {
+            if (this.numberOfTouches === 0) {
+                this._removeTrackingListeners();
+                this.reset();
+            } else
+                this.enterCancelledState();
+        }
 
         this._updateBaseListeners();
     },
