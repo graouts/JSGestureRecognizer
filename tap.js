@@ -47,7 +47,7 @@ TapGestureRecognizer.prototype = {
             return;
         }
 
-        if (this._startPoint.distanceToPoint(this.locationInElement()) > TapGestureRecognizer.MoveTolerance)
+        if (this._startPoint.distanceToPoint(GestureRecognizer.prototype.locationInElement.call(this)) > TapGestureRecognizer.MoveTolerance)
             this.enterFailedState();
     },
 
