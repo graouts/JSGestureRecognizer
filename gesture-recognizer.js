@@ -2,7 +2,7 @@
 module.exports = GestureRecognizer;
 
 var DOM = require("dom-events"),
-    Point = require("geometry/point");
+    Point = require("geometry/point.js");
 
 function GestureRecognizer()
 {

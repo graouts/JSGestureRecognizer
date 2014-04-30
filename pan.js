@@ -2,7 +2,7 @@
 module.exports = PanGestureRecognizer;
 
 var GestureRecognizer = require("./gesture-recognizer"),
-    Point = require("geometry/point");
+    Point = require("geometry/point.js");
 
 function PanGestureRecognizer()
 {
